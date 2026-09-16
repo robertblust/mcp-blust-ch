@@ -84,11 +84,12 @@ purpose: the surface has one address.
   Resource Manager, Service Usage, Storage, Artifact Registry;
 - one Workload Identity pool `github` with a GitHub OIDC provider whose attribute condition
   admits `robertblust/mcp-blust-ch` only;
-- the service account `terraform` with `roles/run.admin`, `roles/artifactregistry.admin`,
-  `roles/iam.serviceAccountAdmin`, `roles/iam.serviceAccountUser`,
-  `roles/resourcemanager.projectIamAdmin`, `roles/serviceusage.serviceUsageAdmin`,
-  `roles/firebase.admin`, `roles/firebasehosting.admin`, `roles/monitoring.editor`, object
-  admin on the state bucket, and `roles/iam.workloadIdentityUser` for the pool's principal set
+- the service account `terraform` with `roles/run.admin`, `roles/iam.serviceAccountAdmin`,
+  `roles/iam.serviceAccountUser`, `roles/serviceusage.serviceUsageAdmin`,
+  `roles/firebase.admin`, `roles/firebasehosting.admin`, `roles/artifactregistry.reader`,
+  object admin on the state bucket — no project-level IAM role, since `infra/` makes no
+  project-level binding, and no monitoring role, since the budget notifies the billing
+  admins by default — and `roles/iam.workloadIdentityUser` for the pool's principal set
   of the whole repository, since the workflows that need it run on pull requests and on `main`
   alike and a fork gets no token;
 - the service account `deploy` with `roles/artifactregistry.writer` and the same pool binding;
