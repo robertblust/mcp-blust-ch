@@ -17,8 +17,6 @@ provider "google" {
   region  = var.region
 }
 
-data "google_project" "this" {}
-
 # Enabling an API already on is a no-op; disabling one on destroy never happens.
 resource "google_project_service" "bootstrap" {
   for_each = toset([
@@ -39,7 +37,12 @@ resource "google_storage_bucket" "state" {
   name                        = "${var.project}-tfstate"
   location                    = var.region
   uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
   versioning { enabled = true }
+  lifecycle_rule {
+    condition { num_newer_versions = 10 }
+    action { type = "Delete" }
+  }
   depends_on = [google_project_service.bootstrap]
 }
 
@@ -75,6 +78,7 @@ locals {
 resource "google_service_account" "terraform" {
   account_id   = "terraform"
   display_name = "Terraform, run by GitHub Actions"
+  depends_on   = [google_project_service.bootstrap]
 }
 
 resource "google_project_iam_member" "terraform" {
@@ -84,12 +88,12 @@ resource "google_project_iam_member" "terraform" {
     "roles/iam.serviceAccountUser",
     "roles/serviceusage.serviceUsageAdmin",
     "roles/firebase.admin",
-    "roles/firebasehosting.admin",
     "roles/artifactregistry.reader",
   ])
-  project = var.project
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.terraform.email}"
+  project    = var.project
+  role       = each.value
+  member     = "serviceAccount:${google_service_account.terraform.email}"
+  depends_on = [google_project_service.bootstrap]
 }
 
 resource "google_storage_bucket_iam_member" "terraform_state" {
@@ -108,6 +112,7 @@ resource "google_service_account_iam_member" "terraform_wif" {
 resource "google_service_account" "deploy" {
   account_id   = "deploy"
   display_name = "Image push, run by GitHub Actions"
+  depends_on   = [google_project_service.bootstrap]
 }
 
 resource "google_artifact_registry_repository_iam_member" "deploy" {
