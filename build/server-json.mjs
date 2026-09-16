@@ -3,12 +3,14 @@
 // workflow passes. The registry caps a description at 100 characters and the build fails
 // rather than truncates, because a truncated sentence is a claim nobody made.
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 
 export const NAME = "ch.blust/mental-model";
 export const URL_ = "https://mcp.blust.ch/mcp";
 
 export function serverJson(snapshot, version) {
   const vision = snapshot.entities.find((e) => e.type === "vision");
+  if (!vision) throw new Error("the model has no vision entity to write the description from");
   const description = `${snapshot.root}: ${vision.name}`;
   if (description.length > 100) throw new Error(`description is ${description.length} characters; the registry allows 100`);
   return {
@@ -21,7 +23,7 @@ export function serverJson(snapshot, version) {
   };
 }
 
-if (process.argv[1] === new URL(import.meta.url).pathname) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const version = process.argv[2];
   if (!version) { console.error("usage: node build/server-json.mjs <version>"); process.exit(2); }
   const root = new URL("..", import.meta.url);
