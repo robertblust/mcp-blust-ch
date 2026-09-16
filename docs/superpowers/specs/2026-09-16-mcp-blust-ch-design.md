@@ -178,6 +178,8 @@ Developer Mode; a moved model pin rebuilds and reports the new commit.
 4. Generate the registry Ed25519 key with OpenSSL 3, publish the TXT record at the apex of
    `blust.ch`, store the private key as the `MCP_PRIVATE_KEY` secret.
 5. Review the `registry` environment run when the first publish is ready.
+6. Add `build` to the `protect-main` ruleset beside `conventions / conventions`, once the job
+   has reported on `main`. (The controller does the ruleset edit itself; the spec records it.)
 
 ## 8. Family membership
 
