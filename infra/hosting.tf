@@ -9,7 +9,7 @@ resource "google_firebase_project" "this" {
 resource "google_firebase_hosting_site" "this" {
   provider   = google-beta
   project    = var.project
-  site_id    = var.project
+  site_id    = var.site_id
   depends_on = [google_firebase_project.this]
 }
 

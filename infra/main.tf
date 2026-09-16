@@ -16,6 +16,7 @@ variable "project" { default = "blust-ch-mcp" }
 variable "project_number" { default = "38003987140" }
 variable "region" { default = "europe-west6" }
 variable "domain" { default = "mcp.blust.ch" }
+variable "site_id" { default = "mcp-blust-ch" }
 variable "billing_account" { default = "011DEB-4A45A0-3A52BB" }
 variable "image" {
   description = "The image to run, pushed by the same workflow run: <registry>/server:<core>-<commit7>"

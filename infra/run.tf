@@ -10,9 +10,10 @@ locals {
 }
 
 resource "google_cloud_run_v2_service" "mcp" {
-  name     = "mcp"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+  name                = "mcp"
+  location            = var.region
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
 
   template {
     service_account = google_service_account.run.email

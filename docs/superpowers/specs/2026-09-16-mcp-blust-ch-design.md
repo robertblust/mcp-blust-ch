@@ -70,7 +70,9 @@ The Dockerfile is `node:22-slim`: copy `package.json` and the lockfile, `npm ci 
 copy `snapshot.json`, run `companygraph-mcp-http --snapshot snapshot.json`. `PORT` comes from
 Cloud Run; `MCP_ALLOWED_HOSTS` is set by Terraform on the service to `mcp.blust.ch` and the
 service's own `run.app` hostname. Which Host header Firebase forwards is verified in the
-plan before the value is fixed, and the list is widened if Hosting rewrites the header.
+plan before the value is fixed, and the list is widened if Hosting rewrites the header. The
+site's own `web.app` and `firebaseapp.com` names are not in the list and are refused on
+purpose: the surface has one address.
 
 ## 4. Infrastructure
 
@@ -102,8 +104,9 @@ the owner grants `terraform` the Billing Account Costs Manager role there by han
 - Cloud Run v2 service `mcp` in `europe-west6`: image from the `image` variable, 256 MiB,
   `min_instance_count = 0`, `max_instance_count = 3`, ingress all, `MCP_ALLOWED_HOSTS`,
   and an IAM binding giving `allUsers` `roles/run.invoker`;
-- `google_firebase_project` attaching Firebase, `google_firebase_hosting_site` with the
-  default site id, a `google_firebase_hosting_version` whose config rewrites `/mcp` to the
+- `google_firebase_project` attaching Firebase, `google_firebase_hosting_site` with its own id
+  `mcp-blust-ch`, since the default site's id is the project id and Firebase may create that
+  one itself, a `google_firebase_hosting_version` whose config rewrites `/mcp` to the
   service in its region and sets `Cache-Control: no-store` on `/mcp`, and its release;
 - `google_firebase_hosting_custom_domain` for `mcp.blust.ch` with
   `wait_dns_verification = false`;
