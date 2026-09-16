@@ -16,8 +16,9 @@ Brief: `brief-mcp-server.md` of 2026-09-16. The server's own design is in
   is an editorial act made in a pull request.
 - **Build-time snapshot.** The build fetches the model at the pinned commit, writes the
   snapshot with the server's own tool, and bakes it into the image. The image tag is
-  `<core version>-<short commit>`, and the server reports the core version, the model commit
-  and the parser tag in every answer.
+  `<core version>-<short commit>`, followed by this repository's own short commit, so a merge
+  that changes only the server still rolls a new revision, and the server reports the core
+  version, the model commit and the parser tag in every answer.
 - **Hosting.** Google Cloud project `blust-ch-mcp`. Cloud Run in `europe-west6`, 256 MiB,
   min 0 and max 3 instances, unauthenticated invocation, a runtime service account holding no
   role. Firebase Hosting rewrites `/mcp` to the service and carries the custom domain
