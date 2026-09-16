@@ -64,7 +64,6 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   attribute_mapping = {
     "google.subject"       = "assertion.sub"
     "attribute.repository" = "assertion.repository"
-    "attribute.ref"        = "assertion.ref"
   }
   attribute_condition = "assertion.repository == \"${var.repository}\""
   oidc { issuer_uri = "https://token.actions.githubusercontent.com" }
@@ -88,6 +87,7 @@ resource "google_project_iam_member" "terraform" {
     "roles/iam.serviceAccountUser",
     "roles/serviceusage.serviceUsageAdmin",
     "roles/firebase.admin",
+    "roles/firebasehosting.admin",
     "roles/artifactregistry.reader",
   ])
   project    = var.project

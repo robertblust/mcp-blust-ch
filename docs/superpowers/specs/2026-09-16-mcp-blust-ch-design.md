@@ -88,8 +88,9 @@ purpose: the surface has one address.
   `roles/iam.serviceAccountAdmin`, `roles/iam.serviceAccountUser`,
   `roles/resourcemanager.projectIamAdmin`, `roles/serviceusage.serviceUsageAdmin`,
   `roles/firebase.admin`, `roles/firebasehosting.admin`, `roles/monitoring.editor`, object
-  admin on the state bucket, and `roles/iam.workloadIdentityUser` for the pool's principal
-  bound to the `main` branch and pull requests of the repository;
+  admin on the state bucket, and `roles/iam.workloadIdentityUser` for the pool's principal set
+  of the whole repository, since the workflows that need it run on pull requests and on `main`
+  alike and a fork gets no token;
 - the service account `deploy` with `roles/artifactregistry.writer` and the same pool binding;
 - the Artifact Registry repository `mcp` itself, because the first image is pushed before the
   main configuration has ever been applied, and a push needs a repository to land in.
