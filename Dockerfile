@@ -3,6 +3,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
-COPY snapshot.json ./snapshot.json
+COPY --chown=node:node snapshot.json ./snapshot.json
 EXPOSE 8080
-CMD ["npx", "--no-install", "companygraph-mcp-http", "--snapshot", "snapshot.json"]
+USER node
+CMD ["node", "node_modules/.bin/companygraph-mcp-http", "--snapshot", "snapshot.json"]
