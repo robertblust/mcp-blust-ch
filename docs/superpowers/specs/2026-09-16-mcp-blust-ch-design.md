@@ -44,7 +44,7 @@ mcp-blust-ch
 ├── package.json             the server by tag; scripts: snapshot, test
 ├── build/
 │   └── snapshot.mjs         reads source.json, calls the server's snapshot tool, writes snapshot.json
-├── build/server.json.mjs    writes server.json from snapshot.json and a version
+├── build/server-json.mjs    writes server.json from snapshot.json and a version
 ├── Dockerfile
 ├── infra/
 │   ├── bootstrap/           state bucket, identity pool and provider, two service accounts

@@ -16,7 +16,7 @@
 - Model pin: `robertblust/mental-model` at `2fd146fe669ef80f7d7b8090ad1cf533b9020ebc` (its main on 2026-09-16, core 0.25.2 vendored). Server pin: `github:companygraph/mcp-server#v0.1.0`. Moving either is an editorial act made in its own pull request.
 - Image: `europe-west6-docker.pkg.dev/blust-ch-mcp/mcp/server:<core version>-<short commit>`, for example `0.25.2-2fd146f`.
 - Cloud Run: service `mcp`, 256 MiB, min 0 and max 3 instances, ingress all, `allUsers` may invoke, runtime service account `mcp-run` with no role, `MCP_ALLOWED_HOSTS=mcp.blust.ch,mcp-38003987140.europe-west6.run.app`.
-- Firebase Hosting: site id `blust-ch-mcp`, rewrite `/mcp` to the service, `Cache-Control: no-store` on `/mcp`, custom domain `mcp.blust.ch`.
+- Firebase Hosting: site id `mcp-blust-ch`, rewrite `/mcp` to the service, `Cache-Control: no-store` on `/mcp`, custom domain `mcp.blust.ch`.
 - Budget: CHF 10 per month, thresholds 0.5, 0.9 and 1.0, notifying the billing admins.
 - APIs are enabled by Terraform with `disable_on_destroy = false` and `disable_dependent_services = false`, never by hand.
 - CI authenticates with Workload Identity Federation only: no key anywhere. Two identities: `terraform@blust-ch-mcp.iam.gserviceaccount.com` applies infrastructure, `deploy@blust-ch-mcp.iam.gserviceaccount.com` pushes images; neither holds the other's roles.
