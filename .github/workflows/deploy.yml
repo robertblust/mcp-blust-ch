@@ -1,0 +1,73 @@
+name: deploy
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+env:
+  REGISTRY: europe-west6-docker.pkg.dev/blust-ch-mcp/mcp
+  WIF_PROVIDER: projects/38003987140/locations/global/workloadIdentityPools/github/providers/github
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.tag.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm test
+      - id: tag
+        run: echo "image=$REGISTRY/server:$(node build/tag.mjs)" >> "$GITHUB_OUTPUT"
+      - run: docker build -t "${{ steps.tag.outputs.image }}" .
+      - if: github.event_name == 'push'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: deploy@blust-ch-mcp.iam.gserviceaccount.com
+      - if: github.event_name == 'push'
+        run: gcloud auth configure-docker europe-west6-docker.pkg.dev --quiet && docker push "${{ steps.tag.outputs.image }}"
+  terraform:
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v7
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: terraform@blust-ch-mcp.iam.gserviceaccount.com
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - run: terraform init -input=false
+      - run: terraform fmt -check
+      - if: github.event_name == 'pull_request'
+        id: plan
+        run: terraform plan -input=false -no-color -var "image=${{ needs.build.outputs.image }}" > plan.txt; echo "exit=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+      - if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          { echo 'Terraform plan for `'"${{ needs.build.outputs.image }}"'`'; echo; echo '```'; tail -c 60000 plan.txt; echo '```'; } > comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body-file comment.md
+          test "${{ steps.plan.outputs.exit }}" = "0"
+      - if: github.event_name == 'push'
+        run: terraform apply -input=false -auto-approve -var "image=${{ needs.build.outputs.image }}"
+      - if: github.event_name == 'push'
+        run: |
+          URL=$(terraform output -raw service_url)
+          WANT=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("../source.json","utf8")).commit)')
+          GOT=$(curl -fsS "$URL/healthz" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(JSON.parse(d).model.commit))')
+          echo "serving $GOT, pinned $WANT"; test "$GOT" = "$WANT"
