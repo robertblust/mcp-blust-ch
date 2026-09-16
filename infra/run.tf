@@ -16,7 +16,8 @@ resource "google_cloud_run_v2_service" "mcp" {
   deletion_protection = false
 
   template {
-    service_account = google_service_account.run.email
+    service_account                  = google_service_account.run.email
+    max_instance_request_concurrency = 20
     scaling {
       min_instance_count = 0
       max_instance_count = 3
@@ -41,4 +42,11 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   location = google_cloud_run_v2_service.mcp.location
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+check "run_host" {
+  assert {
+    condition     = google_cloud_run_v2_service.mcp.uri == "https://${local.run_host}"
+    error_message = "The service's URI is not the deterministic host in MCP_ALLOWED_HOSTS; a POST to /mcp on the run.app address will be refused until run.tf names the real host."
+  }
 }
