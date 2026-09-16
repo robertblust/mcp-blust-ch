@@ -78,7 +78,7 @@ plan before the value is fixed, and the list is widened if Hosting rewrites the 
 
 - the state bucket `blust-ch-mcp-tfstate` in `europe-west6`, versioned;
 - the APIs the bootstrap itself needs: IAM, IAM Credentials, Security Token Service, Cloud
-  Resource Manager, Service Usage, Storage;
+  Resource Manager, Service Usage, Storage, Artifact Registry;
 - one Workload Identity pool `github` with a GitHub OIDC provider whose attribute condition
   admits `robertblust/mcp-blust-ch` only;
 - the service account `terraform` with `roles/run.admin`, `roles/artifactregistry.admin`,
@@ -87,7 +87,9 @@ plan before the value is fixed, and the list is widened if Hosting rewrites the 
   `roles/firebase.admin`, `roles/firebasehosting.admin`, `roles/monitoring.editor`, object
   admin on the state bucket, and `roles/iam.workloadIdentityUser` for the pool's principal
   bound to the `main` branch and pull requests of the repository;
-- the service account `deploy` with `roles/artifactregistry.writer` and the same pool binding.
+- the service account `deploy` with `roles/artifactregistry.writer` and the same pool binding;
+- the Artifact Registry repository `mcp` itself, because the first image is pushed before the
+  main configuration has ever been applied, and a push needs a repository to land in.
 
 The budget needs a role on the billing account, which no project-level Terraform can grant;
 the owner grants `terraform` the Billing Account Costs Manager role there by hand, once.
@@ -96,7 +98,6 @@ the owner grants `terraform` the Billing Account Costs Manager role there by han
 
 - the remaining APIs: Cloud Run, Artifact Registry, Firebase, Firebase Hosting, Billing
   Budgets, Logging, Monitoring;
-- Artifact Registry repository `mcp`, Docker, `europe-west6`;
 - the runtime service account `mcp-run` with no role;
 - Cloud Run v2 service `mcp` in `europe-west6`: image from the `image` variable, 256 MiB,
   `min_instance_count = 0`, `max_instance_count = 3`, ingress all, `MCP_ALLOWED_HOSTS`,
