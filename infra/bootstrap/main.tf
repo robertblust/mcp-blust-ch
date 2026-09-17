@@ -13,9 +13,13 @@ variable "region" { default = "europe-west6" }
 variable "repository" { default = "robertblust/mcp-blust-ch" }
 variable "billing_account" { default = "011DEB-4A45A0-3A52BB" }
 
+# The Organization Policy API bills its calls to a quota project, and a user's local
+# credentials name none, so the provider names this project rather than gcloud's default.
 provider "google" {
-  project = var.project
-  region  = var.region
+  project               = var.project
+  region                = var.region
+  user_project_override = true
+  billing_project       = var.project
 }
 
 # Enabling an API already on is a no-op; disabling one on destroy never happens.
@@ -28,6 +32,8 @@ resource "google_project_service" "bootstrap" {
     "serviceusage.googleapis.com",
     "storage.googleapis.com",
     "artifactregistry.googleapis.com",
+    "orgpolicy.googleapis.com",
+    "cloudbilling.googleapis.com",
   ])
   service                    = each.value
   disable_on_destroy         = false
@@ -72,6 +78,21 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 
 locals {
   principal = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.repository}"
+}
+
+# The project sits under the flatland.ch organization, whose domain-restricted sharing refuses
+# a binding to allUsers, and a public MCP server is nothing but such a binding. This override
+# on the project alone lets ../ grant allUsers the invoker role on the service; setting it
+# needs the Organization Policy Administrator role, which the owner holds and CI never does.
+resource "google_org_policy_policy" "allow_public_members" {
+  name   = "projects/${var.project}/policies/iam.allowedPolicyMemberDomains"
+  parent = "projects/${var.project}"
+  spec {
+    rules {
+      allow_all = "TRUE"
+    }
+  }
+  depends_on = [google_project_service.bootstrap]
 }
 
 # Applies ../: Cloud Run, Firebase, Hosting, the budget, the APIs it needs.

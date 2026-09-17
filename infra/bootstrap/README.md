@@ -13,3 +13,12 @@ The budget in `../` is a resource of the billing account, not of the project, an
 billing administrator can grant the role that creates it. The owner is one, so this
 configuration grants `terraform@blust-ch-mcp.iam.gserviceaccount.com` the Billing Account
 Costs Manager role on the billing account; CI's own account never could.
+
+The project belongs to the flatland.ch organization, whose domain-restricted sharing refuses a
+binding to `allUsers`, and a public server is nothing but such a binding. This configuration
+overrides that policy on the project alone. Setting an organization policy needs the
+Organization Policy Administrator role, which an Organization Administrator can grant to
+themselves once:
+
+    gcloud organizations add-iam-policy-binding 14986580178 \
+      --member=user:robert.blust@flatland.ch --role=roles/orgpolicy.policyAdmin

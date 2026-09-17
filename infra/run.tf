@@ -5,8 +5,12 @@ resource "google_service_account" "run" {
   depends_on   = [google_project_service.main]
 }
 
+# Cloud Run gave this service the hashed form of its URL rather than the deterministic one, so
+# the host is read from the service once and named here; the check below says when it drifts.
+variable "run_host" { default = "mcp-6nrmpez2aq-oa.a.run.app" }
+
 locals {
-  run_host = "mcp-${var.project_number}.${var.region}.run.app"
+  run_host = var.run_host
 }
 
 resource "google_cloud_run_v2_service" "mcp" {
