@@ -132,7 +132,8 @@ Costs Manager role there, since the account CI applies with never could.
 - **On a pull request:** `npm ci`, `npm run snapshot`, `npm test`, then `terraform init` and
   `terraform plan` as `terraform`, the plan posted as a comment on the pull request. The image
   variable is the tag this pull request would build, so the plan shows the revision change;
-  the image itself is not pushed.
+  the image itself is not pushed. The plan takes no state lock, since it writes nothing and
+  several pull requests plan at once; the apply on `main` keeps the lock.
 - **On push to `main`:** the same build and tests, then `docker build` and push to Artifact
   Registry as `deploy`, then `terraform apply -var image=<tag>` as `terraform`, which rolls
   the revision. A final step calls `list_types` over `/mcp` on the service URL and fails unless the
