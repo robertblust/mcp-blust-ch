@@ -26,7 +26,8 @@ resource "google_cloud_run_v2_service" "mcp" {
       image = var.image
       ports { container_port = 8080 }
       resources {
-        limits = { cpu = "1", memory = "256Mi" }
+        limits   = { cpu = "1", memory = "256Mi" }
+        cpu_idle = true
       }
       env {
         name  = "MCP_ALLOWED_HOSTS"

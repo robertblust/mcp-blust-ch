@@ -104,7 +104,9 @@ the owner grants `terraform` the Billing Account Costs Manager role there by han
 - the remaining APIs: Cloud Run, Artifact Registry, Firebase, Firebase Hosting, Billing
   Budgets, Logging, Monitoring;
 - the runtime service account `mcp-run` with no role;
-- Cloud Run v2 service `mcp` in `europe-west6`: image from the `image` variable, 256 MiB,
+- Cloud Run v2 service `mcp` in `europe-west6`: image from the `image` variable, 256 MiB
+  with the CPU throttled outside requests (`cpu_idle = true`), since Cloud Run allows less
+  than 512 MiB only in that mode,
   `min_instance_count = 0`, `max_instance_count = 3`, ingress all, `MCP_ALLOWED_HOSTS`,
   and an IAM binding giving `allUsers` `roles/run.invoker`;
 - `google_firebase_project` attaching Firebase, `google_firebase_hosting_site` with its own id
