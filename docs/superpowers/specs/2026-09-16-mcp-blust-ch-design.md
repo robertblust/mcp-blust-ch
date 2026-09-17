@@ -136,9 +136,9 @@ Costs Manager role there, since the account CI applies with never could.
 - **On push to `main`:** the same build and tests, then `docker build` and push to Artifact
   Registry as `deploy`, then `terraform apply -var image=<tag>` as `terraform`, which rolls
   the revision. A final step calls `list_types` over `/mcp` on the service URL and fails unless the
-  commit every answer carries is the one in `source.json`. It does not call `/healthz`:
-  Cloud Run's front end answers that path itself with a 404 and the request never reaches
-  the container.
+  commit every answer carries is the one in `source.json`. It does not call the server's health path: Cloud
+  Run's front end answered `/healthz` itself with a 404, which is why the server renamed it
+  to `/health` in v0.1.1, and a call over `/mcp` proves more than a health path can.
 
 `publish.yml`, on a tag `v*`, in a GitHub environment `registry` that requires the owner's
 review: build the snapshot, write `server.json` with `version` set to the tag, install
