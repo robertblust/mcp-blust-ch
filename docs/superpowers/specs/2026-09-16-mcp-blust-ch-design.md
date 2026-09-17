@@ -135,8 +135,10 @@ Costs Manager role there, since the account CI applies with never could.
   the image itself is not pushed.
 - **On push to `main`:** the same build and tests, then `docker build` and push to Artifact
   Registry as `deploy`, then `terraform apply -var image=<tag>` as `terraform`, which rolls
-  the revision. A final step calls `/healthz` on the service URL and fails unless the reported
-  commit is the one in `source.json`.
+  the revision. A final step calls `list_types` over `/mcp` on the service URL and fails unless the
+  commit every answer carries is the one in `source.json`. It does not call `/healthz`:
+  Cloud Run's front end answers that path itself with a 404 and the request never reaches
+  the container.
 
 `publish.yml`, on a tag `v*`, in a GitHub environment `registry` that requires the owner's
 review: build the snapshot, write `server.json` with `version` set to the tag, install
