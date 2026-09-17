@@ -96,15 +96,18 @@ purpose: the surface has one address.
 - the Artifact Registry repository `mcp` itself, because the first image is pushed before the
   main configuration has ever been applied, and a push needs a repository to land in.
 
-The budget needs a role on the billing account, which no project-level Terraform can grant;
-the owner grants `terraform` the Billing Account Costs Manager role there by hand, once.
+The budget needs a role on the billing account, which only a billing administrator can
+grant; the bootstrap, applied under the owner's login, grants `terraform` the Billing Account
+Costs Manager role there, since the account CI applies with never could.
 
 **Main** (`infra/`, state in the bucket, applied by CI):
 
 - the remaining APIs: Cloud Run, Artifact Registry, Firebase, Firebase Hosting, Billing
   Budgets, Logging, Monitoring;
 - the runtime service account `mcp-run` with no role;
-- Cloud Run v2 service `mcp` in `europe-west6`: image from the `image` variable, 256 MiB,
+- Cloud Run v2 service `mcp` in `europe-west6`: image from the `image` variable, 256 MiB
+  with the CPU throttled outside requests (`cpu_idle = true`), since Cloud Run allows less
+  than 512 MiB only in that mode,
   `min_instance_count = 0`, `max_instance_count = 3`, ingress all, `MCP_ALLOWED_HOSTS`,
   and an IAM binding giving `allUsers` `roles/run.invoker`;
 - `google_firebase_project` attaching Firebase, `google_firebase_hosting_site` with its own id
