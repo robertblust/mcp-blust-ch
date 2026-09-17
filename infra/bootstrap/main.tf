@@ -28,6 +28,7 @@ resource "google_project_service" "bootstrap" {
     "serviceusage.googleapis.com",
     "storage.googleapis.com",
     "artifactregistry.googleapis.com",
+    "orgpolicy.googleapis.com",
   ])
   service                    = each.value
   disable_on_destroy         = false
@@ -72,6 +73,21 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 
 locals {
   principal = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.repository}"
+}
+
+# The project sits under the flatland.ch organization, whose domain-restricted sharing refuses
+# a binding to allUsers, and a public MCP server is nothing but such a binding. This override
+# on the project alone lets ../ grant allUsers the invoker role on the service; setting it
+# needs the Organization Policy Administrator role, which the owner holds and CI never does.
+resource "google_org_policy_policy" "allow_public_members" {
+  name   = "projects/${var.project}/policies/iam.allowedPolicyMemberDomains"
+  parent = "projects/${var.project}"
+  spec {
+    rules {
+      allow_all = "TRUE"
+    }
+  }
+  depends_on = [google_project_service.bootstrap]
 }
 
 # Applies ../: Cloud Run, Firebase, Hosting, the budget, the APIs it needs.

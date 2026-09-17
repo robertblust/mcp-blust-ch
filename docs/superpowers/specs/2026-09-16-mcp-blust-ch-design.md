@@ -70,7 +70,8 @@ manifest and the parser tag.
 The Dockerfile is `node:22-slim`: copy `package.json` and the lockfile, `npm ci --omit=dev`,
 copy `snapshot.json`, run `companygraph-mcp-http --snapshot snapshot.json`. `PORT` comes from
 Cloud Run; `MCP_ALLOWED_HOSTS` is set by Terraform on the service to `mcp.blust.ch` and the
-service's own `run.app` hostname. Which Host header Firebase forwards is verified in the
+service's own `run.app` hostname, which Cloud Run issued in its hashed form and a variable
+names; a check warns when the service's URI stops matching it. Which Host header Firebase forwards is verified in the
 plan before the value is fixed, and the list is widened if Hosting rewrites the header. The
 site's own `web.app` and `firebaseapp.com` names are not in the list and are refused on
 purpose: the surface has one address.
@@ -95,6 +96,9 @@ purpose: the surface has one address.
 - the service account `deploy` with `roles/artifactregistry.writer` and the same pool binding;
 - the Artifact Registry repository `mcp` itself, because the first image is pushed before the
   main configuration has ever been applied, and a push needs a repository to land in.
+- an organization-policy override on the project allowing any member in an IAM binding,
+  because the project sits under the flatland.ch organization whose domain-restricted sharing
+  refuses `allUsers`, and setting it needs a role only the owner holds.
 
 The budget needs a role on the billing account, which only a billing administrator can
 grant; the bootstrap, applied under the owner's login, grants `terraform` the Billing Account
