@@ -11,6 +11,7 @@ terraform {
 variable "project" { default = "blust-ch-mcp" }
 variable "region" { default = "europe-west6" }
 variable "repository" { default = "robertblust/mcp-blust-ch" }
+variable "billing_account" { default = "011DEB-4A45A0-3A52BB" }
 
 provider "google" {
   project = var.project
@@ -94,6 +95,15 @@ resource "google_project_iam_member" "terraform" {
   role       = each.value
   member     = "serviceAccount:${google_service_account.terraform.email}"
   depends_on = [google_project_service.bootstrap]
+}
+
+# The budget in ../ is a resource of the billing account, not of the project, and only a
+# billing administrator can grant the role that creates it. The owner is one; the terraform
+# account is not and must not be, which is why this grant lives here and not in ../.
+resource "google_billing_account_iam_member" "terraform_budgets" {
+  billing_account_id = var.billing_account
+  role               = "roles/billing.costsManager"
+  member             = "serviceAccount:${google_service_account.terraform.email}"
 }
 
 resource "google_storage_bucket_iam_member" "terraform_state" {

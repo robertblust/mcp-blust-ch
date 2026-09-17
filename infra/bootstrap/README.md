@@ -9,6 +9,7 @@ locally, with local state that stays on their machine, and again only when a rep
     docker run --rm -it -v "$PWD":/w -w /w -v "$HOME/.config/gcloud":/root/.config/gcloud hashicorp/terraform:1.9.8 init
     docker run --rm -it -v "$PWD":/w -w /w -v "$HOME/.config/gcloud":/root/.config/gcloud hashicorp/terraform:1.9.8 apply
 
-The budget in `../` needs one role this configuration cannot grant, because it sits on the
-billing account and not in the project: give `terraform@blust-ch-mcp.iam.gserviceaccount.com`
-the Billing Account Costs Manager role on the billing account in the console, once.
+The budget in `../` is a resource of the billing account, not of the project, and only a
+billing administrator can grant the role that creates it. The owner is one, so this
+configuration grants `terraform@blust-ch-mcp.iam.gserviceaccount.com` the Billing Account
+Costs Manager role on the billing account; CI's own account never could.

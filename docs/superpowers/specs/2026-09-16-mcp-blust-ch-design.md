@@ -96,8 +96,9 @@ purpose: the surface has one address.
 - the Artifact Registry repository `mcp` itself, because the first image is pushed before the
   main configuration has ever been applied, and a push needs a repository to land in.
 
-The budget needs a role on the billing account, which no project-level Terraform can grant;
-the owner grants `terraform` the Billing Account Costs Manager role there by hand, once.
+The budget needs a role on the billing account, which only a billing administrator can
+grant; the bootstrap, applied under the owner's login, grants `terraform` the Billing Account
+Costs Manager role there, since the account CI applies with never could.
 
 **Main** (`infra/`, state in the bucket, applied by CI):
 
