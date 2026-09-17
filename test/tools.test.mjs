@@ -12,7 +12,7 @@ const s = JSON.parse(fs.readFileSync(new URL("snapshot.json", root), "utf8"));
 test("the snapshot is the pinned commit of the pinned repository", () => {
   assert.equal(s.commit, source.commit);
   assert.equal(s.repo, source.repo);
-  assert.equal(s.core.version, "0.26.0");
+  assert.equal(s.core.version, "0.27.0");
   assert.equal(s.root, "Robert Blust");
   assert.equal(listTypes(s).types.length, 15);
 });
