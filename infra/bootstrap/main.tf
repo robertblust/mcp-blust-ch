@@ -13,9 +13,13 @@ variable "region" { default = "europe-west6" }
 variable "repository" { default = "robertblust/mcp-blust-ch" }
 variable "billing_account" { default = "011DEB-4A45A0-3A52BB" }
 
+# The Organization Policy API bills its calls to a quota project, and a user's local
+# credentials name none, so the provider names this project rather than gcloud's default.
 provider "google" {
-  project = var.project
-  region  = var.region
+  project               = var.project
+  region                = var.region
+  user_project_override = true
+  billing_project       = var.project
 }
 
 # Enabling an API already on is a no-op; disabling one on destroy never happens.
