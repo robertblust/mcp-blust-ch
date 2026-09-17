@@ -33,6 +33,7 @@ resource "google_project_service" "bootstrap" {
     "storage.googleapis.com",
     "artifactregistry.googleapis.com",
     "orgpolicy.googleapis.com",
+    "cloudbilling.googleapis.com",
   ])
   service                    = each.value
   disable_on_destroy         = false
