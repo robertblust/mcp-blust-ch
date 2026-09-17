@@ -10,4 +10,38 @@ Whoever asks about Robert Blust's work â€” a person, a search engine, an agent â
 same answer, because every surface derives from one model. This is the surface an agent
 queries.
 
-The design is in `docs/superpowers/specs/`. Nothing else is built yet.
+## Using it
+
+Add `https://mcp.blust.ch/mcp` as a custom connector in Claude, or as a remote MCP server in
+ChatGPT's developer mode or the Gemini CLI. No authentication. Seven tools: `list_types`,
+`describe_schema`, `list_entities`, `get_entity`, `find_evidence`, `search` and `fetch`; every
+answer names the model commit it was read from.
+
+## What pins what
+
+`source.json` names the model commit and `package.json` the server release. Moving either is a
+pull request; the merge builds the image, applies the infrastructure with it and checks that
+`/healthz` reports the new commit.
+
+## Building it
+
+    npm ci
+    npm run snapshot      # writes snapshot.json from the pinned commit
+    npm test              # the seven tools against that snapshot
+    docker build -t mcp-blust-ch:local .
+
+## Infrastructure
+
+`infra/bootstrap/` is applied once by the owner and holds what CI needs before it can
+authenticate: the state bucket, the identity pool, the two service accounts and the image
+registry. `infra/` is applied by CI on every merge. The workflows in `.github/workflows/` say
+what runs when.
+
+Publishing to the MCP Registry runs in the `registry` environment, which requires the owner's
+review of every run. The signing key lives there as an environment secret, `MCP_PRIVATE_KEY`,
+never as a repository secret, because a repository secret would be readable by any workflow on
+any branch and the review gate would protect nothing.
+
+## License
+
+CC BY 4.0 for the text here; the model's own license is its own.

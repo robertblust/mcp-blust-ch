@@ -15,3 +15,12 @@ says whether the copy matches the release, `sync` brings it to the release the p
 a shared file in robertblust/conventions, never here.
 <!-- end conventions -->
 
+## This repository
+
+mcp.blust.ch: the reference instance served over MCP. Two pins, each moved only in a pull
+request: `source.json` names the commit of `robertblust/mental-model` the image serves, and
+`package.json` names the release of `companygraph/mcp-server` that serves it. The required
+checks on `main` are `conventions / conventions` and `build`, the job that writes the snapshot,
+runs the tests and builds the image. `infra/bootstrap/` is the owner's, applied once by hand;
+`infra/` is CI's, applied on every merge. Nothing here commits to the model or the server.
+
