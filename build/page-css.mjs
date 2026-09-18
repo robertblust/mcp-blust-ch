@@ -74,19 +74,33 @@ const own = `
   .title { margin-bottom: .4rem; }
   a { color: var(--c-mid); }
   a:hover, a:focus-visible { color: var(--ink); }
-  code, pre { font-family: "Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-              font-size: .88em; }
+  code, pre, .mono { font-family: "Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  code, pre { font-size: .88em; }
   pre, code.addr { background: var(--raise); border: 1px solid var(--rule); border-radius: 6px; }
   pre { padding: .85rem 1rem; overflow-x: auto; }
   code.addr { padding: .25rem .5rem; color: var(--c-mid); }
 
-  table.tools { border-collapse: collapse; width: 100%; }
-  table.tools td, table.tools th { text-align: left; vertical-align: top;
-       padding: .6rem .9rem .6rem 0; border-bottom: 1px solid var(--rule); }
-  table.tools th { font-size: .82rem; font-weight: 600; color: var(--dim);
-       letter-spacing: .02em; text-transform: none; }
-  table.tools td:first-child { white-space: nowrap; width: 1%; color: var(--c-mid); }
-  table.tools td { color: var(--ink); }
+  /* The row the API page lists an operation with, reused for both lists here: the paths the
+     server answers, and the tools it answers them with. A card at rest, scannable in one pass,
+     the method in the accent and the summary in prose beside it. Nothing here opens, because
+     neither list has a detail to hide: the API page's rows are disclosures and these are not,
+     which is why the shared shape is the head row rather than the summary element. */
+  .ops { margin-top: 1.3rem; padding: 0; list-style: none; display: grid; gap: .55rem; }
+  .ops > li { background: var(--raise); border: 1px solid var(--rule); border-radius: 8px; }
+  .ops .head { display: grid; gap: .15rem .9rem; align-items: baseline;
+               grid-template-columns: minmax(0, 1fr); padding: .5rem .75rem; }
+  .ops .m { font-size: .74rem; font-weight: 600; letter-spacing: .08em; color: var(--c-mid); }
+  .ops .p { font-size: .9rem; color: var(--ink); }
+  .ops .s { font-size: .93rem; color: var(--dim); }
+  .ops .s code { color: var(--ink); }
+
+  @media (min-width: 780px) {
+    /* Narrower than the API page's 21rem path column: these paths are /mcp and /, and that
+       measure was cut for /apaleo/events/{secret}. Same grid, sized for what it holds. */
+    .ops .head { grid-template-columns: 3.6rem minmax(0, 7rem) minmax(0, 1fr); }
+    /* A tool has no method, so its two columns start where the path's does. */
+    .ops.tools .head { grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); }
+  }
 
   footer { margin-top: 2.6rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
            font-family: "Plex Mono", ui-monospace, monospace; font-size: .78rem;
@@ -96,7 +110,6 @@ const own = `
 
   @media (max-width: 34rem) {
     body { padding: 2.5rem 0 4rem; }
-    table.tools td:first-child { white-space: normal; }
   }
 `;
 
