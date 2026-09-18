@@ -38,3 +38,33 @@ change about never; a palette change moves both.
 The host rewrites every path to the service rather than only `/mcp`, so the server owns `/`,
 `/health` and its own 404. A path the server grows later needs no apply.
 
+## What checks the page
+
+`test/page.test.mjs` opens a browser and measures the rendered page: the shell's measure and
+gutter, where the mark sits, that the wordmark is two colors and one line, and that nothing
+scrolls sideways at 360px. It is the only thing here that needs a browser, and the workflows
+install chromium for it.
+
+It exists because the three sites are covered by the design package's own page checks and this
+page is not — those crawl a directory of files and this page is rendered by a server. The design
+system's position is that a contract is an outcome rather than a declaration: `header.css`
+leaves the brand lockup and the bar's gap to each site on purpose, and `verify/pages.mjs`
+measures the result instead. This file is that treatment, narrowed to what this page has.
+
+Two of its checks read what they expect out of the design package rather than naming a number:
+the shell's measure comes from `blocks/reset.css`, and the headline is asserted as the title
+contract's shape. A release that moves either fails here instead of diverging quietly. The
+container itself is not styled in `build/own.css` at all — the page names it `main.shell` and
+the vendored reset owns it, because a number restated beside the package declaring it is a
+number that drifts.
+
+`build/own.css` is a file and not a string in `build/page-css.mjs` for one reason: a backtick in
+it, in a comment naming a class, ended the template literal that used to hold it and broke the
+build three times. A rule that has to be remembered is a rule that gets forgotten.
+
+Every assertion in it is a mistake that was made and that nothing else caught — a doubled brace
+that swallowed the shell's gutter, body padding that pushed the mark below its siblings, a link
+rule that painted the whole wordmark one color, and a commit hash with nothing to break on that
+took the page past the viewport. None of them failed anything: the sheet parsed and the page
+rendered every time.
+

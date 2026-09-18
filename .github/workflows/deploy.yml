@@ -27,6 +27,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run page-css
+      # The page checks open a browser: they measure the rendered page rather than read the
+      # stylesheet, which is the only way to see a gutter that did not apply or a wordmark that
+      # broke. Chromium alone, and only here, because nothing the image runs needs one.
+      - run: npx playwright install --with-deps chromium
       - run: npm test
       - id: tag
         run: echo "image=$REGISTRY/server:$(node build/tag.mjs)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"

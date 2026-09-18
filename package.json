@@ -14,10 +14,11 @@
     "test": "node --test 'test/*.test.mjs'"
   },
   "dependencies": {
-    "companygraph-mcp-server": "github:companygraph/mcp-server#v0.6.0"
+    "companygraph-mcp-server": "github:companygraph/mcp-server#v0.8.0"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "^2.0.0",
-    "@robertblust/design": "github:robertblust/design#v0.63.0"
+    "@robertblust/design": "github:robertblust/design#v0.63.0",
+    "playwright": "^1.63.0"
   }
 }
