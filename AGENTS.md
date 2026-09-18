@@ -51,6 +51,17 @@ system's position is that a contract is an outcome rather than a declaration: `h
 leaves the brand lockup and the bar's gap to each site on purpose, and `verify/pages.mjs`
 measures the result instead. This file is that treatment, narrowed to what this page has.
 
+Two of its checks read what they expect out of the design package rather than naming a number:
+the shell's measure comes from `blocks/reset.css`, and the headline is asserted as the title
+contract's shape. A release that moves either fails here instead of diverging quietly. The
+container itself is not styled in `build/own.css` at all — the page names it `main.shell` and
+the vendored reset owns it, because a number restated beside the package declaring it is a
+number that drifts.
+
+`build/own.css` is a file and not a string in `build/page-css.mjs` for one reason: a backtick in
+it, in a comment naming a class, ended the template literal that used to hold it and broke the
+build three times. A rule that has to be remembered is a rule that gets forgotten.
+
 Every assertion in it is a mistake that was made and that nothing else caught — a doubled brace
 that swallowed the shell's gutter, body padding that pushed the mark below its siblings, a link
 rule that painted the whole wordmark one color, and a commit hash with nothing to break on that

@@ -55,7 +55,7 @@ test("the content sits in the family's shell", async () => {
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
   await page.goto(base, { waitUntil: "networkidle" });
   const shell = await page.evaluate(() => {
-    const m = document.querySelector("main");
+    const m = document.querySelector("main.shell");
     const cs = getComputedStyle(m);
     const box = m.getBoundingClientRect();
     return {
@@ -64,11 +64,53 @@ test("the content sits in the family's shell", async () => {
       bodyPadTop: getComputedStyle(document.body).paddingTop,
     };
   });
-  assert.equal(shell.maxWidth, "1180px", "the shell caps at the family's measure");
-  assert.equal(shell.padLeft, "80px", "the gutter reached its stop");
-  assert.equal(shell.padRight, "80px", "and on both sides");
+  assert.equal(shell.padRight, "80px", "the gutter reached its stop on both sides");
   assert.equal(shell.outer, 1180, "the shell is as wide as it may be at this viewport");
   assert.equal(shell.bodyPadTop, "0px", "the space above the header is the header's, not the body's");
+  await page.close();
+});
+
+// The measure is the design package's, not this repository's: the page names its container and
+// the vendored reset styles it. Read the expected numbers out of the package rather than typing
+// them, so a release that moves the family's measure fails here instead of diverging quietly.
+test("the shell is the one the design package declares", async () => {
+  const reset = fs.readFileSync(
+    new URL("../node_modules/@robertblust/design/blocks/reset.css", import.meta.url), "utf8");
+  const rule = reset.match(/\.shell\{([^}]*)\}/);
+  assert.ok(rule, "the design package still ships a .shell rule");
+  const want = Object.fromEntries(rule[1].split(";").map((d) => d.split(":").map((x) => x.trim())));
+
+  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  await page.goto(base, { waitUntil: "networkidle" });
+  const got = await page.evaluate(() => {
+    const cs = getComputedStyle(document.querySelector("main.shell"));
+    return { maxWidth: cs.maxWidth, padding: cs.paddingLeft };
+  });
+  assert.equal(got.maxWidth, want["max-width"], "the page takes the package's measure");
+  // `min(7vw, 80px)` at 1400 is 80, the stop the package's own comment describes.
+  assert.equal(got.padding, "80px", "the gutter reached the package's stop");
+  await page.close();
+});
+
+// The headline is the design package's title contract, and the contract is that the first clause
+// reads light and dim over a heavy completion. If a release renamed those classes the page would
+// keep emitting them, the rules would match nothing, and the headline would go flat with nothing
+// else here noticing.
+test("the title contract still shapes the headline", async () => {
+  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  await page.goto(base, { waitUntil: "networkidle" });
+  const h = await page.evaluate(() => {
+    const cs = (s) => getComputedStyle(document.querySelector(s));
+    const weight = (s) => Number(cs(s).fontWeight);
+    return {
+      family: cs(".title h1").fontFamily,
+      light: weight(".title h1 .r70"), heavy: weight(".title h1 .rcl"),
+      dim: cs(".title h1 .r70").color, ink: cs(".title h1 .rcl").color,
+    };
+  });
+  assert.match(h.family, /Bricolage/, "the headline is set in the family's display face");
+  assert.ok(h.heavy > h.light, `the completion is heavier: ${h.heavy} against ${h.light}`);
+  assert.notEqual(h.dim, h.ink, "the first clause reads dimmer than the completion");
   await page.close();
 });
 
