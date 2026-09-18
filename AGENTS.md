@@ -25,6 +25,16 @@ checks on `main` are `conventions / conventions` and `build`, the job that write
 runs the tests and builds the image. `infra/bootstrap/` is the owner's, applied once by hand;
 `infra/` is CI's, applied on every merge. Nothing here commits to the model or the server.
 
+`jsonld.json` is built and never committed either, from the same snapshot: the person and the
+endpoint the surface's file says a crawler is told about, with the addresses read from the
+profile's `## Also at`. It carries no check of its own against going stale, because it cannot —
+blust.ch needs one since it commits its rendered pages, and nothing rendered is committed here.
+What `test/page.test.mjs` asserts instead is every field against the snapshot it came from, which
+the design package's own shared-node check calls the stronger form; the one half of that check
+worth keeping is there too, that no two nodes share an `@id` and no pointer resolves outside the
+document. `robots.txt` is written by hand and committed, because a rule about what may be crawled
+is a decision rather than a derivation.
+
 `snapshot.json` and `page.css` are built, never committed: the snapshot from the model commit,
 the stylesheet from the design package's own blocks with the fonts inlined, because a page
 rendered by a server has no static directory to serve them from. Both are written by CI before

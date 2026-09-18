@@ -37,6 +37,8 @@ before(async () => {
     pageCss: read("page.css"),
     pageBrand: read("brand.html").trim(),
     pageIcon: `data:image/svg+xml;base64,${fs.readFileSync(new URL("../favicon.svg", import.meta.url)).toString("base64")}`,
+    pageJsonld: JSON.stringify(JSON.parse(read("jsonld.json"))).replace(/</g, "\\u003c"),
+    robots: read("robots.txt"),
   });
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${server.address().port}/`;
@@ -166,6 +168,70 @@ test("on a phone the wordmark holds and nothing scrolls sideways", async () => {
     `the wordmark broke: the brand is ${shut.brand}px against a ${shut.mark}px mark`);
   assert.ok(!shut.wide, "the page scrolls sideways");
   await page.close();
+});
+
+// The unit the surface's file calls structured data: the person and the endpoint a crawler is
+// told about. Asserted against the model rather than against a literal, because the whole point
+// of deriving it is that nobody types an address twice.
+test("a crawler is told the person and the endpoint the model names", async () => {
+  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  await page.goto(base, { waitUntil: "networkidle" });
+  const graph = await page.evaluate(() =>
+    JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent)["@graph"]);
+
+  const identity = snapshot.entities.find((e) => e.id === snapshot.rootId);
+  const surface = snapshot.entities.find((e) => e.type === "surface" && e.name.includes("MCP server"));
+  const origin = surface.fields.url.replace(/\/$/, "");
+
+  const person = graph.find((n) => n["@type"] === "Person");
+  assert.equal(person["@id"], `${origin}/#person`, "the person is this host's copy, not a pointer elsewhere");
+  assert.equal(person.name, identity.name, "the name is the identity's");
+  assert.equal(person.url, identity.fields.url, "the url is the identity's");
+  // Minimal, as the family settled: a sibling defines its own copy and keeps it to these keys.
+  assert.deepEqual(Object.keys(person).sort(), ["@id", "@type", "name", "sameAs", "url"]);
+
+  const profile = snapshot.entities.find((e) => e.type === "profile" && e.name === snapshot.root);
+  const table = profile.sections.find((s) => s.heading === "Also at").tables[0];
+  const want = table.rows.map((r) => r[table.columns.indexOf("URL")])
+    .filter((u) => !u.startsWith(origin) && u.replace(/\/$/, "") !== identity.fields.url.replace(/\/$/, ""));
+  assert.deepEqual(person.sameAs, want, "every address is one the profile's Also at holds");
+
+  const api = graph.find((n) => n["@type"] === "WebAPI");
+  assert.equal(api.url, `${origin}/mcp`, "the API is the endpoint the model names");
+  assert.equal(api.description, surface.tagline, "its description is the surface's own tagline");
+  assert.equal(api.provider["@id"], person["@id"], "and it resolves to the person in this document");
+
+  // The half of the design package's shared-node check that is not redundant here. Its own
+  // comment says a site generating its graph from a source has the stronger check already, and
+  // this graph is generated and asserted against that source above. What that leaves is the
+  // pointer: a crawler reads a graph per document, so a bare `{"@id": …}` has to resolve inside
+  // this one, and every id has to describe one thing rather than two.
+  const ids = graph.map((n) => n["@id"]);
+  assert.equal(new Set(ids).size, ids.length, `two nodes share an @id: ${ids.join(", ")}`);
+  const pointers = [];
+  const walk = (o) => {
+    if (Array.isArray(o)) return o.forEach(walk);
+    if (!o || typeof o !== "object") return;
+    const keys = Object.keys(o);
+    if (keys.length === 1 && keys[0] === "@id") pointers.push(o["@id"]);
+    else for (const [k, v] of Object.entries(o)) if (k !== "@id") walk(v);
+  };
+  walk(graph);
+  assert.ok(pointers.length, "the graph makes at least one reference");
+  const dangling = pointers.filter((id) => !ids.includes(id));
+  assert.deepEqual(dangling, [], `a pointer resolves nowhere in this document: ${dangling.join(", ")}`);
+
+  await page.close();
+});
+
+// A crawler asks for this before it asks for anything else.
+test("robots.txt is served and allows the page", async () => {
+  const r = await fetch(new URL("/robots.txt", base));
+  assert.equal(r.status, 200);
+  const body = await r.text();
+  assert.match(body, /^User-agent: \*$/m);
+  assert.match(body, /^Allow: \/$/m);
+  assert.ok(!/^Sitemap:/m.test(body), "no sitemap line: this address is not discovered here");
 });
 
 // The one link that is not decoration: a reader who arrived from a registry listing and wants

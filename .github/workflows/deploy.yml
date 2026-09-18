@@ -27,6 +27,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run page-css
+      - run: npm run jsonld
       # The page checks open a browser: they measure the rendered page rather than read the
       # stylesheet, which is the only way to see a gutter that did not apply or a wordmark that
       # broke. Chromium alone, and only here, because nothing the image runs needs one.

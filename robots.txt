@@ -1,0 +1,14 @@
+# mcp.blust.ch
+#
+# One page and one endpoint, both meant to be found. No sitemap line: blust.ch's own robots.txt
+# carries one because that site had no inbound links and discovery had to start there, which is
+# not true here — this address is linked from blust.ch's surfaces page, listed in the public MCP
+# Registry and pointed at from a post. A sitemap enumerating one URL that the rule below already
+# allows is a second file to keep in step for nothing.
+#
+# /mcp answers POST and returns 405 to a crawler's GET. That is an answer rather than a wall, so
+# it is not disallowed: the structured data names it as this surface's API and a rule forbidding
+# what the graph advertises would be the page disagreeing with itself.
+
+User-agent: *
+Allow: /
