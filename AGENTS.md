@@ -17,10 +17,19 @@ a shared file in robertblust/conventions, never here.
 
 ## This repository
 
-mcp.blust.ch: the reference instance served over MCP. Two pins, each moved only in a pull
-request: `source.json` names the commit of `robertblust/mental-model` the image serves, and
-`package.json` names the release of `companygraph/mcp-server` that serves it. The required
+mcp.blust.ch: the reference instance served over MCP. Three pins, each moved only in a pull
+request: `source.json` names the commit of `robertblust/mental-model` the image serves,
+`package.json` names the release of `companygraph/mcp-server` that serves it and the release of
+`@robertblust/design` whose blocks the landing page is styled from. The required
 checks on `main` are `conventions / conventions` and `build`, the job that writes the snapshot,
 runs the tests and builds the image. `infra/bootstrap/` is the owner's, applied once by hand;
 `infra/` is CI's, applied on every merge. Nothing here commits to the model or the server.
+
+`snapshot.json` and `page.css` are built, never committed: the snapshot from the model commit,
+the stylesheet from the design package's own blocks with the fonts inlined, because a page
+rendered by a server has no static directory to serve them from. Both are written by CI before
+the image is built, and the server is told to use them.
+
+The host rewrites every path to the service rather than only `/mcp`, so the server owns `/`,
+`/health` and its own 404. A path the server grows later needs no apply.
 

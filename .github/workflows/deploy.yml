@@ -26,6 +26,7 @@ jobs:
       - run: npm run snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run page-css
       - run: npm test
       - id: tag
         run: echo "image=$REGISTRY/server:$(node build/tag.mjs)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"

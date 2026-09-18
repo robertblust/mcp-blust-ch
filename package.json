@@ -9,6 +9,7 @@
   },
   "scripts": {
     "snapshot": "node build/snapshot.mjs",
+    "page-css": "node build/page-css.mjs",
     "server-json": "node build/server-json.mjs",
     "test": "node --test 'test/*.test.mjs'"
   },
@@ -16,6 +17,7 @@
     "companygraph-mcp-server": "github:companygraph/mcp-server#v0.4.0"
   },
   "devDependencies": {
-    "@modelcontextprotocol/client": "^2.0.0"
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@robertblust/design": "github:robertblust/design#v0.63.0"
   }
 }
