@@ -45,15 +45,23 @@ const faces = FONTS.map(({ family, file, weight }) => {
 
 const OUT = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), "page.css");
 
-// `design tokens` is the one fence whose stored block stops before the closing brace: a prose
-// page closes `:root` inside the fence and a deck leaves it open. This page is prose.
-const tokens = `${blockFor("design tokens", "page")}\n  }`;
+// `design tokens` is the one fence whose stored block stops before the closing brace, and
+// `blockFor` puts it back for the variant that closes: a prose page closes `:root` inside the
+// fence, a deck leaves it open for its own tokens. So the page variant arrives closed and adding
+// a brace here left the sheet one ahead — 50 open against 51 — which cost the rules after it.
+const tokens = blockFor("design tokens", "page");
 const reset = blockFor("prose reset", null);
 const title = blockFor("title contract", null);
 
+// No backtick below, in a comment or a value: this is a template literal, and one ends it
+// mid-stylesheet. Node throws at import rather than writing half a sheet, which is the only
+// reason it has never shipped that way.
 const own = `
   /* The page's own layout. Everything above is the design package's, and moves with it. */
-  body { background: var(--ground); color: var(--ink); padding: 4rem 1.25rem 6rem; }
+  /* No top padding on the body: blust.ch has none, and the space above the mark is the
+     header's own 2rem. Adding any here pushes the whole page down by exactly that much, which
+     is what put the mark 22 pixels below its sibling. */
+  body { background: var(--ground); color: var(--ink); padding: 0 0 6rem; }
   main { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 min(7vw, 80px); }
 
   /* The shapes guestgraph.io/api/ uses, so the two read as one family: a Bricolage h2, prose
@@ -72,6 +80,27 @@ const own = `
   .note p { margin: 0 0 .8rem; max-width: none; }
   .note p:last-child { margin-bottom: 0; }
   .title { margin-bottom: .4rem; }
+
+  /* The header the family's pages open with, and only its left half: the mark, linked home.
+     No nav, because there is one page here and nowhere to navigate to, and no language or
+     theme control, because nothing on this page is translated and the tokens carry both
+     themes already. The design package's header block is not vendored for the same reason: it
+     is the block for the nav this page does not have. These rules are blust.ch's own, read out
+     of its landing page, so the two open the same way. */
+  header { padding: 2rem 0; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+         flex-wrap: wrap; }
+  /* The lockup takes the page's own ink, not the link colour: on blust.ch the reset leaves a
+     link inheriting and only the span of the wordmark is the accent. Without this the generic
+     rule above paints the whole brand blue and the two halves stop being two halves. */
+  .brand { white-space: nowrap; flex: 0 0 auto; display: flex; align-items: center; gap: .7rem;
+           text-decoration: none; margin-right: auto; color: var(--ink); }
+  .brand svg { width: 28px; height: 28px; color: var(--c-mid); flex: 0 0 auto; }
+  .brand .plate { fill: var(--raise); stroke: var(--rule); stroke-width: 1.5; }
+  .brand .rb { fill: var(--c-mid); }
+  .brand b { font-weight: 600; font-size: 1.06rem; letter-spacing: -.01em; }
+  .brand b span { color: var(--c-mid); }
+  .brand:focus-visible { outline: 2px solid var(--c-mid); outline-offset: 4px; border-radius: 4px; }
   a { color: var(--c-mid); }
   a:hover, a:focus-visible { color: var(--ink); }
   code, pre, .mono { font-family: "Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -109,7 +138,7 @@ const own = `
   footer a:hover, footer a:focus-visible { color: var(--c-mid); }
 
   @media (max-width: 34rem) {
-    body { padding: 2.5rem 0 4rem; }
+    body { padding: 0 0 4rem; }
   }
 `;
 
