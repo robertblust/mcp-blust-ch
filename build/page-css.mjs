@@ -54,11 +54,23 @@ const title = blockFor("title contract", null);
 const own = `
   /* The page's own layout. Everything above is the design package's, and moves with it. */
   body { background: var(--ground); color: var(--ink); padding: 4rem 1.25rem 6rem; }
-  main { max-width: 46rem; margin: 0 auto; }
-  h2 { font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-       font-size: 1rem; font-weight: 600; color: var(--ink);
-       margin: 3rem 0 .85rem; }
-  p { margin: 0 0 1rem; max-width: 66ch; }
+  main { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 min(7vw, 80px); }
+
+  /* The shapes guestgraph.io/api/ uses, so the two read as one family: a Bricolage h2, prose
+     at 62ch in --dim, and one marked block per page in --c-flag. The tokens say that colour is
+     a reversal and never decoration — here it marks the sentence where the server says what it
+     does not do, which is the only claim on the page a reader has to take on trust. */
+  h2 { font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+       font-weight: 700; letter-spacing: -.025em; line-height: 1.06;
+       font-size: clamp(1.35rem, 2.3vw, 1.8rem); color: var(--ink);
+       margin: clamp(2.6rem, 6vh, 4rem) 0 .2rem; }
+  p { margin: 0 0 1rem; max-width: 62ch; }
+  .lede { margin-top: .9rem; margin-bottom: 0; font-size: 1rem; color: var(--dim);
+          max-width: 62ch; }
+  .note { margin: 2rem 0; max-width: 56ch; padding-left: 1rem;
+          border-left: 2px solid var(--c-flag); color: var(--ink); font-size: 1rem; }
+  .note p { margin: 0 0 .8rem; max-width: none; }
+  .note p:last-child { margin-bottom: 0; }
   .title { margin-bottom: .4rem; }
   a { color: var(--c-mid); }
   a:hover, a:focus-visible { color: var(--ink); }
@@ -76,11 +88,14 @@ const own = `
   table.tools td:first-child { white-space: nowrap; width: 1%; color: var(--c-mid); }
   table.tools td { color: var(--ink); }
 
-  footer { margin-top: 3.5rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
-           color: var(--dim); font-size: .9rem; }
+  footer { margin-top: 2.6rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+           font-family: "Plex Mono", ui-monospace, monospace; font-size: .78rem;
+           letter-spacing: .06em; color: var(--dim); }
+  footer a { color: inherit; }
+  footer a:hover, footer a:focus-visible { color: var(--c-mid); }
 
   @media (max-width: 34rem) {
-    body { padding: 2.5rem 1rem 4rem; }
+    body { padding: 2.5rem 0 4rem; }
     table.tools td:first-child { white-space: normal; }
   }
 `;
