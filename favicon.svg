@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Stands alone: a favicon is fetched on its own, so it can neither @font-face a face nor
+       inherit one from the page. It therefore names only faces a machine already has. It used
+       to lead with "IBM Plex Mono", which this site does not ship and no machine has, so the
+       browser fell through to the generic mono anyway — the name described an intention, not
+       a rendering. The pages' inline copies of this mark do lead with "Plex Mono", because
+       there the face is served from this origin; the divergence is deliberate, the same way
+       the hard-coded hexes below diverge from the CSS tokens the pages use. -->
+  <rect width="32" height="32" rx="7" fill="#0f1013"/>
+  <text x="16" y="22.5" text-anchor="middle"
+        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+        font-size="17" font-weight="600" fill="#7aa0ff">rb</text>
+</svg>
