@@ -10,11 +10,12 @@
   "scripts": {
     "snapshot": "node build/snapshot.mjs",
     "page-css": "node build/page-css.mjs",
+    "jsonld": "node build/jsonld.mjs",
     "server-json": "node build/server-json.mjs",
     "test": "node --test 'test/*.test.mjs'"
   },
   "dependencies": {
-    "companygraph-mcp-server": "github:companygraph/mcp-server#v0.8.0"
+    "companygraph-mcp-server": "github:companygraph/mcp-server#v0.9.0"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "^2.0.0",

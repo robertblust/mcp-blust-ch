@@ -1,6 +1,7 @@
 node_modules/
 snapshot.json
 page.css
+jsonld.json
 server.json
 .terraform/
 *.tfstate
