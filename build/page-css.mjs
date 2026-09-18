@@ -45,43 +45,100 @@ const faces = FONTS.map(({ family, file, weight }) => {
 
 const OUT = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), "page.css");
 
-// `design tokens` is the one fence whose stored block stops before the closing brace: a prose
-// page closes `:root` inside the fence and a deck leaves it open. This page is prose.
-const tokens = `${blockFor("design tokens", "page")}\n  }`;
+// `design tokens` is the one fence whose stored block stops before the closing brace, and
+// `blockFor` puts it back for the variant that closes: a prose page closes `:root` inside the
+// fence, a deck leaves it open for its own tokens. So the page variant arrives closed and adding
+// a brace here left the sheet one ahead — 50 open against 51 — which cost the rules after it.
+const tokens = blockFor("design tokens", "page");
 const reset = blockFor("prose reset", null);
 const title = blockFor("title contract", null);
 
+// No backtick below, in a comment or a value: this is a template literal, and one ends it
+// mid-stylesheet. Node throws at import rather than writing half a sheet, which is the only
+// reason it has never shipped that way.
 const own = `
   /* The page's own layout. Everything above is the design package's, and moves with it. */
-  body { background: var(--ground); color: var(--ink); padding: 4rem 1.25rem 6rem; }
-  main { max-width: 46rem; margin: 0 auto; }
-  h2 { font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-       font-size: 1rem; font-weight: 600; color: var(--ink);
-       margin: 3rem 0 .85rem; }
-  p { margin: 0 0 1rem; max-width: 66ch; }
+  /* No top padding on the body: blust.ch has none, and the space above the mark is the
+     header's own 2rem. Adding any here pushes the whole page down by exactly that much, which
+     is what put the mark 22 pixels below its sibling. */
+  body { background: var(--ground); color: var(--ink); padding: 0 0 6rem; }
+  main { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 min(7vw, 80px); }
+
+  /* The shapes guestgraph.io/api/ uses, so the two read as one family: a Bricolage h2, prose
+     at 62ch in --dim, and one marked block per page in --c-flag. The tokens say that colour is
+     a reversal and never decoration — here it marks the sentence where the server says what it
+     does not do, which is the only claim on the page a reader has to take on trust. */
+  h2 { font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+       font-weight: 700; letter-spacing: -.025em; line-height: 1.06;
+       font-size: clamp(1.35rem, 2.3vw, 1.8rem); color: var(--ink);
+       margin: clamp(2.6rem, 6vh, 4rem) 0 .2rem; }
+  p { margin: 0 0 1rem; max-width: 62ch; }
+  .lede { margin-top: .9rem; margin-bottom: 0; font-size: 1rem; color: var(--dim);
+          max-width: 62ch; }
+  .note { margin: 2rem 0; max-width: 56ch; padding-left: 1rem;
+          border-left: 2px solid var(--c-flag); color: var(--ink); font-size: 1rem; }
+  .note p { margin: 0 0 .8rem; max-width: none; }
+  .note p:last-child { margin-bottom: 0; }
   .title { margin-bottom: .4rem; }
+
+  /* The header the family's pages open with, and only its left half: the mark, linked home.
+     No nav, because there is one page here and nowhere to navigate to, and no language or
+     theme control, because nothing on this page is translated and the tokens carry both
+     themes already. The design package's header block is not vendored for the same reason: it
+     is the block for the nav this page does not have. These rules are blust.ch's own, read out
+     of its landing page, so the two open the same way. */
+  header { padding: 2rem 0; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+         flex-wrap: wrap; }
+  /* The lockup takes the page's own ink, not the link colour: on blust.ch the reset leaves a
+     link inheriting and only the span of the wordmark is the accent. Without this the generic
+     rule above paints the whole brand blue and the two halves stop being two halves. */
+  .brand { white-space: nowrap; flex: 0 0 auto; display: flex; align-items: center; gap: .7rem;
+           text-decoration: none; margin-right: auto; color: var(--ink); }
+  .brand svg { width: 28px; height: 28px; color: var(--c-mid); flex: 0 0 auto; }
+  .brand .plate { fill: var(--raise); stroke: var(--rule); stroke-width: 1.5; }
+  .brand .rb { fill: var(--c-mid); }
+  .brand b { font-weight: 600; font-size: 1.06rem; letter-spacing: -.01em; }
+  .brand b span { color: var(--c-mid); }
+  .brand:focus-visible { outline: 2px solid var(--c-mid); outline-offset: 4px; border-radius: 4px; }
   a { color: var(--c-mid); }
   a:hover, a:focus-visible { color: var(--ink); }
-  code, pre { font-family: "Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-              font-size: .88em; }
+  code, pre, .mono { font-family: "Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  code, pre { font-size: .88em; }
   pre, code.addr { background: var(--raise); border: 1px solid var(--rule); border-radius: 6px; }
   pre { padding: .85rem 1rem; overflow-x: auto; }
   code.addr { padding: .25rem .5rem; color: var(--c-mid); }
 
-  table.tools { border-collapse: collapse; width: 100%; }
-  table.tools td, table.tools th { text-align: left; vertical-align: top;
-       padding: .6rem .9rem .6rem 0; border-bottom: 1px solid var(--rule); }
-  table.tools th { font-size: .82rem; font-weight: 600; color: var(--dim);
-       letter-spacing: .02em; text-transform: none; }
-  table.tools td:first-child { white-space: nowrap; width: 1%; color: var(--c-mid); }
-  table.tools td { color: var(--ink); }
+  /* The row the API page lists an operation with, reused for both lists here: the paths the
+     server answers, and the tools it answers them with. A card at rest, scannable in one pass,
+     the method in the accent and the summary in prose beside it. Nothing here opens, because
+     neither list has a detail to hide: the API page's rows are disclosures and these are not,
+     which is why the shared shape is the head row rather than the summary element. */
+  .ops { margin-top: 1.3rem; padding: 0; list-style: none; display: grid; gap: .55rem; }
+  .ops > li { background: var(--raise); border: 1px solid var(--rule); border-radius: 8px; }
+  .ops .head { display: grid; gap: .15rem .9rem; align-items: baseline;
+               grid-template-columns: minmax(0, 1fr); padding: .5rem .75rem; }
+  .ops .m { font-size: .74rem; font-weight: 600; letter-spacing: .08em; color: var(--c-mid); }
+  .ops .p { font-size: .9rem; color: var(--ink); }
+  .ops .s { font-size: .93rem; color: var(--dim); }
+  .ops .s code { color: var(--ink); }
 
-  footer { margin-top: 3.5rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
-           color: var(--dim); font-size: .9rem; }
+  @media (min-width: 780px) {
+    /* Narrower than the API page's 21rem path column: these paths are /mcp and /, and that
+       measure was cut for /apaleo/events/{secret}. Same grid, sized for what it holds. */
+    .ops .head { grid-template-columns: 3.6rem minmax(0, 7rem) minmax(0, 1fr); }
+    /* A tool has no method, so its two columns start where the path's does. */
+    .ops.tools .head { grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); }
+  }
+
+  footer { margin-top: 2.6rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+           font-family: "Plex Mono", ui-monospace, monospace; font-size: .78rem;
+           letter-spacing: .06em; color: var(--dim); }
+  footer a { color: inherit; }
+  footer a:hover, footer a:focus-visible { color: var(--c-mid); }
 
   @media (max-width: 34rem) {
-    body { padding: 2.5rem 1rem 4rem; }
-    table.tools td:first-child { white-space: normal; }
+    body { padding: 0 0 4rem; }
   }
 `;
 

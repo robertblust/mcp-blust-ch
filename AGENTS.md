@@ -30,6 +30,11 @@ the stylesheet from the design package's own blocks with the fonts inlined, beca
 rendered by a server has no static directory to serve them from. Both are written by CI before
 the image is built, and the server is told to use them.
 
+`favicon.svg` is committed rather than built: it is the mark blust.ch carries, copied here
+because a surface inlines its own copy in this family — the design package styles `.rbmark` and
+ships no SVG for it. Two copies that can drift, and the cost is accepted for 971 bytes that
+change about never; a palette change moves both.
+
 The host rewrites every path to the service rather than only `/mcp`, so the server owns `/`,
 `/health` and its own 404. A path the server grows later needs no apply.
 
