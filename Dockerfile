@@ -4,6 +4,7 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY --chown=node:node snapshot.json ./snapshot.json
+COPY --chown=node:node page.css ./page.css
 EXPOSE 8080
 USER node
-CMD ["node", "node_modules/.bin/companygraph-mcp-http", "--snapshot", "snapshot.json"]
+CMD ["node", "node_modules/.bin/companygraph-mcp-http", "--snapshot", "snapshot.json", "--page-css", "page.css"]

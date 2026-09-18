@@ -17,6 +17,7 @@ jobs:
       - run: npm run snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run page-css
       - run: npm test
       - run: node build/server-json.mjs "${GITHUB_REF_NAME#v}"
       - run: cat server.json
