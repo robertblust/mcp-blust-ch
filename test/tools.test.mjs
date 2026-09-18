@@ -9,12 +9,20 @@ const root = new URL("..", import.meta.url);
 const source = JSON.parse(fs.readFileSync(new URL("source.json", root), "utf8"));
 const s = JSON.parse(fs.readFileSync(new URL("snapshot.json", root), "utf8"));
 
+// The core release and how many types it holds are facts of the pin and the model, not of this
+// file: a number typed here stops being true on the next release and fails nothing until someone
+// reads it. The parser's package version is the core release it ships against, and the snapshot
+// carries the schemas the instance was read with.
+const parser = JSON.parse(
+  fs.readFileSync(new URL("node_modules/companygraph-meta-model/package.json", root), "utf8"),
+);
+
 test("the snapshot is the pinned commit of the pinned repository", () => {
   assert.equal(s.commit, source.commit);
   assert.equal(s.repo, source.repo);
-  assert.equal(s.core.version, "0.27.0");
+  assert.equal(s.core.version, parser.version);
   assert.equal(s.root, "Robert Blust");
-  assert.equal(listTypes(s).types.length, 15);
+  assert.equal(listTypes(s).types.length, s.schemas.length);
 });
 
 test("every type describes and lists, and one entity of each resolves", () => {
