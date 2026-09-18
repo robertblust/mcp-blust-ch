@@ -5,7 +5,7 @@
 // by asking the design package for its own blocks rather than copying their bytes here, which
 // is the same reason a page carries fences instead of a stylesheet somebody pasted once.
 //
-// Four blocks and no more. Tokens carries the colour ramp and both themes; the prose reset is
+// Four blocks and no more. Tokens carries the color ramp and both themes; the prose reset is
 // what every prose page in the family declares first; the title contract is the two-part
 // headline; the footer credit is the mark. The header, the nav and the stage are deliberately
 // absent — this is one screen of prose and a table, with nowhere to navigate to.
@@ -65,7 +65,7 @@ const own = `
   main { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 min(7vw, 80px); }
 
   /* The shapes guestgraph.io/api/ uses, so the two read as one family: a Bricolage h2, prose
-     at 62ch in --dim, and one marked block per page in --c-flag. The tokens say that colour is
+     at 62ch in --dim, and one marked block per page in --c-flag. The tokens say that color is
      a reversal and never decoration — here it marks the sentence where the server says what it
      does not do, which is the only claim on the page a reader has to take on trust. */
   h2 { font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
@@ -77,7 +77,11 @@ const own = `
           max-width: 62ch; }
   .note { margin: 2rem 0; max-width: 56ch; padding-left: 1rem;
           border-left: 2px solid var(--c-flag); color: var(--ink); font-size: 1rem; }
-  .note p { margin: 0 0 .8rem; max-width: none; }
+  /* The commit is forty characters with nothing to break on, and it is the one place in this
+     family where prose carries a token that long: every other page prints the short form. On a
+     narrow screen it took the page 35 pixels past the viewport, which is a sideways scroll a
+     reader feels and no check here saw until one measured it. */
+  .note p { margin: 0 0 .8rem; max-width: none; overflow-wrap: anywhere; }
   .note p:last-child { margin-bottom: 0; }
   .title { margin-bottom: .4rem; }
 
@@ -90,7 +94,7 @@ const own = `
   header { padding: 2rem 0; }
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 2rem;
          flex-wrap: wrap; }
-  /* The lockup takes the page's own ink, not the link colour: on blust.ch the reset leaves a
+  /* The lockup takes the page's own ink, not the link color: on blust.ch the reset leaves a
      link inheriting and only the span of the wordmark is the accent. Without this the generic
      rule above paints the whole brand blue and the two halves stop being two halves. */
   .brand { white-space: nowrap; flex: 0 0 auto; display: flex; align-items: center; gap: .7rem;
