@@ -41,9 +41,12 @@ test("the company of one refuses a bare name and resolves a typed one", () => {
 });
 
 test("evidence is verbatim and search round-trips through fetch", () => {
-  const claim = findEvidence(s, "Agentic AI development").evidence.profile.find((x) => x.id === "profiles/robert-blust");
+  // The claim and each fact under it are separate edges from the profile, told apart by via.
+  const ev = findEvidence(s, "Agentic AI development").evidence.profile;
+  const claim = ev.find((x) => x.id === "profiles/robert-blust" && x.via === "Skills.Skill");
   assert.equal(claim.attrs.Level.name, "Expert");
-  assert.ok(claim.attrs.Evidence.startsWith("Built LIKE MAGIC's internal AI marketplace on Claude"));
+  const row = ev.find((x) => x.via === "Evidence.Skill" && x.attrs["What it shows"].startsWith("Built LIKE MAGIC's internal AI marketplace on Claude"));
+  assert.equal(row.attrs.Experience.name, "Co-Founder & Head of Technology");
   const hit = search(s, "LIKE MAGIC").results.find((r) => r.id === "profiles/robert-blust/experiences/2022-likemagic");
   assert.equal(fetchEntity(s, hit.id).title, "Co-Founder & Head of Technology");
 });
