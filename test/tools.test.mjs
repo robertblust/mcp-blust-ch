@@ -1,3 +1,4 @@
+import { isNewer } from "companygraph-meta-model/checks";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -11,8 +12,10 @@ const s = JSON.parse(fs.readFileSync(new URL("snapshot.json", root), "utf8"));
 
 // The core release and how many types it holds are facts of the pin and the model, not of this
 // file: a number typed here stops being true on the next release and fails nothing until someone
-// reads it. The parser's package version is the core release it ships against, and the snapshot
-// carries the schemas the instance was read with.
+// reads it. The snapshot carries the schemas the instance was read with, and the parser that
+// read them is never older than they are: a release of the package alone moves the parser and
+// leaves core where it is, so the two may differ, and only a core ahead of its parser is wrong.
+// `isNewer` is the checker's own comparison of two releases, the one its guard refuses with.
 const parser = JSON.parse(
   fs.readFileSync(new URL("node_modules/companygraph-meta-model/package.json", root), "utf8"),
 );
@@ -20,7 +23,7 @@ const parser = JSON.parse(
 test("the snapshot is the pinned commit of the pinned repository", () => {
   assert.equal(s.commit, source.commit);
   assert.equal(s.repo, source.repo);
-  assert.equal(s.core.version, parser.version);
+  assert.ok(!isNewer(s.core.version, parser.version), `core ${s.core.version} is newer than the parser ${parser.version} that read it`);
   assert.equal(s.root, "Robert Blust");
   assert.equal(listTypes(s).types.length, s.schemas.length);
 });
@@ -61,7 +64,7 @@ test("every tool the server lists answers, and every answer carries the commit",
   // No count is held here: the list is the server's, and a tool it gains is called like the
   // rest. One it gains that this table has no arguments for fails by name, never in silence.
   const ARGS = { list_types: {}, describe_schema: { type: "skill" }, describe_relations: {}, list_rules: {},
-    describe_rule: { rule: "R4" }, list_entities: { type: "value" },
+    describe_rule: { rule: "R4" }, list_checks: {}, list_entities: { type: "value" },
     get_entity: { type: "identity", name: "Robert Blust" }, find_evidence: { skill: "Agentic AI development" },
     search: { query: "model" }, fetch: { id: "identity" } };
   assert.ok(tools.length > 0);
