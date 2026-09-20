@@ -51,19 +51,23 @@ test("evidence is verbatim and search round-trips through fetch", () => {
   assert.equal(fetchEntity(s, hit.id).title, "Co-Founder & Head of Technology");
 });
 
-test("the server lists seven tools and every answer carries the commit", async () => {
+test("every tool the server lists answers, and every answer carries the commit", async () => {
   const [a, b] = InMemoryTransport.createLinkedPair();
   await createServer(s).connect(a);
   const client = new Client({ name: "test", version: "0" });
   await client.connect(b);
   assert.equal(client.getServerVersion().title, "Robert Blust");
   const { tools } = await client.listTools();
-  assert.equal(tools.length, 7);
+  // No count is held here: the list is the server's, and a tool it gains is called like the
+  // rest. One it gains that this table has no arguments for fails by name, never in silence.
+  const ARGS = { list_types: {}, describe_schema: { type: "skill" }, describe_relations: {}, list_rules: {},
+    describe_rule: { rule: "R4" }, list_entities: { type: "value" },
+    get_entity: { type: "identity", name: "Robert Blust" }, find_evidence: { skill: "Agentic AI development" },
+    search: { query: "model" }, fetch: { id: "identity" } };
+  assert.ok(tools.length > 0);
   for (const name of tools.map((t) => t.name)) {
-    const args = { list_types: {}, describe_schema: { type: "skill" }, list_entities: { type: "value" },
-      get_entity: { type: "identity", name: "Robert Blust" }, find_evidence: { skill: "Agentic AI development" },
-      search: { query: "model" }, fetch: { id: "identity" } }[name];
-    const r = await client.callTool({ name, arguments: args });
+    assert.ok(name in ARGS, `${name} is served and this test has no arguments to call it with`);
+    const r = await client.callTool({ name, arguments: ARGS[name] });
     assert.equal(r.isError, undefined, name);
     assert.equal(r.structuredContent.model.commit, source.commit, name);
   }

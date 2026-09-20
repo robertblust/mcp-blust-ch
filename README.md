@@ -13,9 +13,11 @@ queries.
 ## Using it
 
 Add `https://mcp.blust.ch/mcp` as a custom connector in Claude, or as a remote MCP server in
-ChatGPT's developer mode or the Gemini CLI. No authentication. Seven tools: `list_types`,
-`describe_schema`, `list_entities`, `get_entity`, `find_evidence`, `search` and `fetch`; every
-answer names the model commit it was read from.
+ChatGPT's developer mode or the Gemini CLI. No authentication. The page at
+`https://mcp.blust.ch` lists the tools with what each returns, from the server's own list:
+the types and their schemas, what the types declare about each other, the rules, and the
+entities with their references and their evidence. Every answer names the model commit it was
+read from.
 
 ## What pins what
 
@@ -27,7 +29,7 @@ pull request; the merge builds the image, applies the infrastructure with it and
 
     npm ci
     npm run snapshot      # writes snapshot.json from the pinned commit
-    npm test              # the seven tools against that snapshot
+    npm test              # every tool against that snapshot
     docker build -t mcp-blust-ch:local .
 
 ## Infrastructure
