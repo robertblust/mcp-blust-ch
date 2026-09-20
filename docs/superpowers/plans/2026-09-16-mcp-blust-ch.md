@@ -52,10 +52,12 @@
 ### Task 1: Pins, snapshot build, tests
 
 **Files:**
+
 - Create: `source.json`, `package.json`, `build/snapshot.mjs`, `build/tag.mjs`, `test/tools.test.mjs`
 - Modify: `.gitignore`
 
 **Interfaces:**
+
 - Produces: `npm run snapshot` writes `snapshot.json` at the repository root; `node build/tag.mjs` prints `<core>-<commit7>`; `npm test` runs `node --test 'test/*.test.mjs'`.
 
 - [ ] **Step 1: Branch, pins and package**
@@ -233,9 +235,11 @@ EOF
 ### Task 2: The image
 
 **Files:**
+
 - Create: `Dockerfile`, `.dockerignore`
 
 **Interfaces:**
+
 - Produces: an image that serves `snapshot.json` on `$PORT` with `companygraph-mcp-http`, honouring `MCP_ALLOWED_HOSTS`.
 
 - [ ] **Step 1: Write the Dockerfile**
@@ -305,9 +309,11 @@ EOF
 ### Task 3: The registry entry
 
 **Files:**
+
 - Create: `build/server-json.mjs`, `test/server-json.test.mjs`
 
 **Interfaces:**
+
 - Produces: `node build/server-json.mjs <version>` writes `server.json`; the module exports `serverJson(snapshot, version)` for the test.
 
 - [ ] **Step 1: Write the failing test**
@@ -408,9 +414,11 @@ EOF
 ### Task 4: Terraform bootstrap
 
 **Files:**
+
 - Create: `infra/bootstrap/main.tf`, `infra/bootstrap/README.md`
 
 **Interfaces:**
+
 - Produces, once applied by the owner: bucket `blust-ch-mcp-tfstate`; pool `github` with provider `github`; service accounts `terraform` and `deploy`; Artifact Registry repository `mcp` in `europe-west6`; outputs `workload_identity_provider`, `terraform_service_account`, `deploy_service_account`, `registry`.
 
 - [ ] **Step 1: Write the configuration**
@@ -604,9 +612,11 @@ EOF
 ### Task 5: Terraform main
 
 **Files:**
+
 - Create: `infra/main.tf`, `infra/run.tf`, `infra/hosting.tf`, `infra/budget.tf`, `infra/outputs.tf`
 
 **Interfaces:**
+
 - Consumes: the bootstrap's bucket, registry and runtime accounts by name.
 - Produces: the Cloud Run service, Firebase Hosting with the rewrite and the domain, the budget; variable `image`; outputs `service_url`, `dns_records`, `hosting_url`.
 
@@ -833,9 +843,11 @@ EOF
 ### Task 6: The workflows and the registry environment
 
 **Files:**
+
 - Create: `.github/workflows/deploy.yml`, `.github/workflows/publish.yml`
 
 **Interfaces:**
+
 - Consumes: the bootstrap outputs, as literals here: provider `projects/38003987140/locations/global/workloadIdentityPools/github/providers/github`, accounts `terraform@blust-ch-mcp.iam.gserviceaccount.com` and `deploy@blust-ch-mcp.iam.gserviceaccount.com`, registry `europe-west6-docker.pkg.dev/blust-ch-mcp/mcp`.
 
 - [ ] **Step 1: Write the deploy workflow**
@@ -987,6 +999,7 @@ EOF
 ### Task 7: README and the pull request
 
 **Files:**
+
 - Modify: `README.md`
 
 - [ ] **Step 1: Write the README** (the first line stays exactly `# mcp.blust.ch`)
@@ -1114,6 +1127,7 @@ Expected: 200 with `cache-control: no-store`. A 403 with `host not allowed` mean
 ### Task 9: The parity report
 
 **Files:**
+
 - Create: `docs/superpowers/reports/2026-09-16-parity.md`
 
 - [ ] **Step 1: ask the server the three questions**, against `https://mcp.blust.ch/mcp` (or the run.app URL if the domain is not yet active), with a small script run once and kept in the report as its method:
