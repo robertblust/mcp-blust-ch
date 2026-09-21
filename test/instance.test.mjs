@@ -52,6 +52,13 @@ test("the registry entry names the name and address deployment.json holds", () =
   assert.deepEqual({ name: d.registry_name, url: `https://${d.domain}/mcp` }, entry);
 });
 
+// mcp-publisher logs in by DNS on registry_domain, and the Registry accepts that login only for
+// the namespace the domain spells in reverse, so the two have to agree label for label.
+test("the registry domain, reversed, is the namespace of the registry name", () => {
+  const d = JSON.parse(fs.readFileSync(path.join(process.cwd(), "deployment.json"), "utf8"));
+  assert.equal(d.registry_domain.split(".").reverse().join("."), d.registry_name.split("/")[0]);
+});
+
 // The shared page test holds the served graph to what the build wrote, which compares the
 // generator with itself. This holds what the build wrote to the model, field by field, so a
 // change to the server's jsonld() that alters the person's keys, the addresses or a pointer
@@ -60,7 +67,8 @@ test("a crawler is told the person and the endpoint the model names", () => {
   const graph = JSON.parse(fs.readFileSync(path.join(process.cwd(), "dist/jsonld.json"), "utf8"))["@graph"];
 
   const identity = s.entities.find((e) => e.id === s.rootId);
-  const surface = s.entities.find((e) => e.type === "surface" && e.name.includes("MCP server"));
+  const surface = s.entities.find((e) => e.type === "surface"
+    && String(e.fields?.["built-by"] ?? "").endsWith("/mcp-blust-ch") && e.name.includes("MCP server"));
   const origin = surface.fields.url.replace(/\/$/, "");
 
   const person = graph.find((n) => n["@type"] === "Person");
