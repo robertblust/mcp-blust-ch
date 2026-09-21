@@ -179,8 +179,7 @@ test("the server lists seven tools and every answer carries the commit", async (
 
 - [ ] **Step 3: Run it to see it fail**
 
-Run: `npm test`
-Expected: FAIL, `ENOENT` on `snapshot.json`.
+Run: `npm test` Expected: FAIL, `ENOENT` on `snapshot.json`.
 
 - [ ] **Step 4: Write the build**
 
@@ -211,8 +210,7 @@ process.stdout.write(`${s.core.version}-${s.commit.slice(0, 7)}\n`);
 
 - [ ] **Step 5: Build and test**
 
-Run: `npm run snapshot && node build/tag.mjs && npm test`
-Expected: the snapshot command reports `143 entities, 608 edges, core 0.25.2, commit 2fd146fe…`; the tag is `0.25.2-2fd146f`; 5 tests pass. With `GITHUB_TOKEN` unset the fetch is about 160 unauthenticated requests, within GitHub's limit for one run.
+Run: `npm run snapshot && node build/tag.mjs && npm test` Expected: the snapshot command reports `143 entities, 608 edges, core 0.25.2, commit 2fd146fe…`; the tag is `0.25.2-2fd146f`; 5 tests pass. With `GITHUB_TOKEN` unset the fetch is about 160 unauthenticated requests, within GitHub's limit for one run.
 
 - [ ] **Step 6: Commit**
 
@@ -347,8 +345,7 @@ test("a description over the limit is refused rather than truncated", () => {
 
 - [ ] **Step 2: Run it to see it fail**
 
-Run: `node --test test/server-json.test.mjs`
-Expected: FAIL, cannot find module.
+Run: `node --test test/server-json.test.mjs` Expected: FAIL, cannot find module.
 
 - [ ] **Step 3: Implement**
 
@@ -390,8 +387,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
 
 - [ ] **Step 4: Run**
 
-Run: `node --test test/server-json.test.mjs && node build/server-json.mjs 0.0.0-test && cat server.json && rm server.json`
-Expected: 2 pass; the file shows the six fields.
+Run: `node --test test/server-json.test.mjs && node build/server-json.mjs 0.0.0-test && cat server.json && rm server.json` Expected: 2 pass; the file shows the six fields.
 
 - [ ] **Step 5: Commit**
 

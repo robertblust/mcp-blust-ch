@@ -1,13 +1,8 @@
 # mcp.blust.ch — design
 
-The reference instance, `robertblust/mental-model`, served over MCP at
-`https://mcp.blust.ch/mcp`. This repository pins one commit of the model and one release of
-`companygraph/mcp-server`, builds an image that bakes the model's snapshot, and runs it on
-Cloud Run in Zurich behind Firebase Hosting. Everything below the Google Cloud project is
-Terraform, applied by GitHub Actions.
+The reference instance, `robertblust/mental-model`, served over MCP at `https://mcp.blust.ch/mcp`. This repository pins one commit of the model and one release of `companygraph/mcp-server`, builds an image that bakes the model's snapshot, and runs it on Cloud Run in Zurich behind Firebase Hosting. Everything below the Google Cloud project is Terraform, applied by GitHub Actions.
 
-Brief: `brief-mcp-server.md` of 2026-09-16. The server's own design is in
-`companygraph/mcp-server`.
+Brief: `brief-mcp-server.md` of 2026-09-16. The server's own design is in `companygraph/mcp-server`.
 
 ## 1. Decisions
 
@@ -62,19 +57,9 @@ mcp-blust-ch
 
 ## 3. The build
 
-`npm run snapshot` reads `source.json` and runs
-`companygraph-mcp-snapshot --github robertblust/mental-model@<sha> --sub model/ --core meta/core/`.
-The result carries the commit, the repository, the core version from the instance's vendored
-manifest and the parser tag.
+`npm run snapshot` reads `source.json` and runs `companygraph-mcp-snapshot --github robertblust/mental-model@<sha> --sub model/ --core meta/core/`. The result carries the commit, the repository, the core version from the instance's vendored manifest and the parser tag.
 
-The Dockerfile is `node:22-slim`: copy `package.json` and the lockfile, `npm ci --omit=dev`,
-copy `snapshot.json`, run `companygraph-mcp-http --snapshot snapshot.json`. `PORT` comes from
-Cloud Run; `MCP_ALLOWED_HOSTS` is set by Terraform on the service to `mcp.blust.ch` and the
-service's own `run.app` hostname, which Cloud Run issued in its hashed form and a variable
-names; a check warns when the service's URI stops matching it. Which Host header Firebase forwards is verified in the
-plan before the value is fixed, and the list is widened if Hosting rewrites the header. The
-site's own `web.app` and `firebaseapp.com` names are not in the list and are refused on
-purpose: the surface has one address.
+The Dockerfile is `node:22-slim`: copy `package.json` and the lockfile, `npm ci --omit=dev`, copy `snapshot.json`, run `companygraph-mcp-http --snapshot snapshot.json`. `PORT` comes from Cloud Run; `MCP_ALLOWED_HOSTS` is set by Terraform on the service to `mcp.blust.ch` and the service's own `run.app` hostname, which Cloud Run issued in its hashed form and a variable names; a check warns when the service's URI stops matching it. Which Host header Firebase forwards is verified in the plan before the value is fixed, and the list is widened if Hosting rewrites the header. The site's own `web.app` and `firebaseapp.com` names are not in the list and are refused on purpose: the surface has one address.
 
 ## 4. Infrastructure
 
@@ -100,9 +85,7 @@ purpose: the surface has one address.
   because the project sits under the flatland.ch organization whose domain-restricted sharing
   refuses `allUsers`, and setting it needs a role only the owner holds.
 
-The budget needs a role on the billing account, which only a billing administrator can
-grant; the bootstrap, applied under the owner's login, grants `terraform` the Billing Account
-Costs Manager role there, since the account CI applies with never could.
+The budget needs a role on the billing account, which only a billing administrator can grant; the bootstrap, applied under the owner's login, grants `terraform` the Billing Account Costs Manager role there, since the account CI applies with never could.
 
 **Main** (`infra/`, state in the bucket, applied by CI):
 
@@ -141,10 +124,7 @@ Costs Manager role there, since the account CI applies with never could.
   Run's front end answered `/healthz` itself with a 404, which is why the server renamed it
   to `/health` in v0.1.1, and a call over `/mcp` proves more than a health path can.
 
-`publish.yml`, on a tag `v*`, in a GitHub environment `registry` that requires the owner's
-review: build the snapshot, write `server.json` with `version` set to the tag, install
-`mcp-publisher`, `login dns --domain blust.ch --private-key` from the `MCP_PRIVATE_KEY` secret,
-`publish`.
+`publish.yml`, on a tag `v*`, in a GitHub environment `registry` that requires the owner's review: build the snapshot, write `server.json` with `version` set to the tag, install `mcp-publisher`, `login dns --domain blust.ch --private-key` from the `MCP_PRIVATE_KEY` secret, `publish`.
 
 `server.json` is generated:
 
@@ -159,26 +139,15 @@ review: build the snapshot, write `server.json` with `version` set to the tag, i
 }
 ```
 
-The description is under the registry's 100-character limit by construction; the build fails
-if it is not.
+The description is under the registry's 100-character limit by construction; the build fails if it is not.
 
 ## 6. Tests and verification
 
-`npm test` runs the server's seven tools in-process against the real snapshot: every type the
-instance declares lists and describes; `get_entity` on the identity and on one entity per
-type; `find_evidence` on one skill the profile claims, with the Evidence cell verbatim;
-`search` and `fetch` round-trip; `fetch` of the identity's name refuses if a profile shares it,
-and resolves otherwise. Every answer carries the commit in `source.json`.
+`npm test` runs the server's seven tools in-process against the real snapshot: every type the instance declares lists and describes; `get_entity` on the identity and on one entity per type; `find_evidence` on one skill the profile claims, with the Evidence cell verbatim; `search` and `fetch` round-trip; `fetch` of the identity's name refuses if a profile shares it, and resolves otherwise. Every answer carries the commit in `source.json`.
 
-The plan ends with a written parity report, not a test: three questions — which skills are
-Expert and on what evidence, what was built at LIKE MAGIC, what does he hold to — asked of the
-deployed server and of the skill bundle `companygraph-export` produces from the same commit.
-Any difference is reported as a model or projection defect and not fixed here.
+The plan ends with a written parity report, not a test: three questions — which skills are Expert and on what evidence, what was built at LIKE MAGIC, what does he hold to — asked of the deployed server and of the skill bundle `companygraph-export` produces from the same commit. Any difference is reported as a model or projection defect and not fixed here.
 
-Acceptance, from the brief: the MCP Inspector connects to the local stdio server and to the
-deployed URL and lists seven tools; `https://mcp.blust.ch/mcp` answers from `europe-west6`
-with no auth; the custom connector works in Claude, with the same manual check in ChatGPT
-Developer Mode; a moved model pin rebuilds and reports the new commit.
+Acceptance, from the brief: the MCP Inspector connects to the local stdio server and to the deployed URL and lists seven tools; `https://mcp.blust.ch/mcp` answers from `europe-west6` with no auth; the custom connector works in Claude, with the same manual check in ChatGPT Developer Mode; a moved model pin rebuilds and reports the new commit.
 
 ## 7. The owner's steps
 
@@ -194,12 +163,8 @@ Developer Mode; a moved model pin rebuilds and reports the new commit.
 
 ## 8. Family membership
 
-The conventions recipe from the first commit, README title "mcp.blust.ch", a row in
-`REPOSITORIES.md` after the connector, commits and pull request bodies in prose ending
-`Verified: …`, and a pull request is opened and left for the owner to merge.
+The conventions recipe from the first commit, README title "mcp.blust.ch", a row in `REPOSITORIES.md` after the connector, commits and pull request bodies in prose ending `Verified: …`, and a pull request is opened and left for the owner to merge.
 
 ## 9. Out of scope
 
-Any commit to `companygraph/meta-model` or `robertblust/mental-model`; WebMCP on blust.ch;
-write tools, authentication, rate limiting beyond max instances; publishing before approval;
-anything about identity, the email address or naming.
+Any commit to `companygraph/meta-model` or `robertblust/mental-model`; WebMCP on blust.ch; write tools, authentication, rate limiting beyond max instances; publishing before approval; anything about identity, the email address or naming.
