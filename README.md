@@ -15,13 +15,15 @@ Add `https://mcp.blust.ch/mcp` as a custom connector in Claude, or as a remote M
 ## Building it
 
     npm ci
-    npm run snapshot      # writes snapshot.json from the pinned commit
-    npm test              # every tool against that snapshot
+    npm run snapshot      # writes dist/snapshot.json from the pinned commit
+    npm run page-css      # writes dist/page.css from the design package's blocks and own.css
+    npm run jsonld        # writes dist/jsonld.json from the snapshot
+    npm test              # the server's shared deployment tests and this instance's own
     docker build -t mcp-blust-ch:local .
 
 ## Infrastructure
 
-`infra/bootstrap/` is applied once by the owner and holds what CI needs before it can authenticate: the state bucket, the identity pool, the two service accounts and the image registry. `infra/` is applied by CI on every merge. The workflows in `.github/workflows/` say what runs when.
+`infra/bootstrap/` is applied once by the owner and holds what CI needs before it can authenticate: the state bucket, the identity pool, the two service accounts and the image registry. `infra/` is applied by CI on every merge: its state bucket and one call into the module `companygraph/mcp-server` ships under `deploy/terraform`, with this deployment's own values read from `deployment.json`. The build is the same package's `companygraph-mcp-deploy`, and the two workflows in `.github/workflows/` only call the package's own `deployment.yml` and `registry.yml`, by the release `package.json` pins.
 
 Publishing to the MCP Registry runs in the `registry` environment, which requires the owner's review of every run. The signing key lives there as an environment secret, `MCP_PRIVATE_KEY`, never as a repository secret, because a repository secret would be readable by any workflow on any branch and the review gate would protect nothing.
 

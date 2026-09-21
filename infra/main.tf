@@ -1,5 +1,6 @@
 # Everything below the project that CI may create, applied on merge to main with the image
-# the same run pushed. State lives in the bucket the bootstrap made.
+# the same run pushed. State lives in the bucket the bootstrap made; the resources themselves
+# are the shared module's, and this deployment's own values come from deployment.json.
 terraform {
   required_version = ">= 1.9"
   required_providers {
@@ -12,37 +13,75 @@ terraform {
   }
 }
 
-variable "project" { default = "blust-ch-mcp" }
-variable "project_number" { default = "38003987140" }
-variable "region" { default = "europe-west6" }
-variable "domain" { default = "mcp.blust.ch" }
-variable "site_id" { default = "mcp-blust-ch" }
-variable "billing_account" { default = "011DEB-4A45A0-3A52BB" }
-variable "image" {
-  description = "The image to run, pushed by the same workflow run: <registry>/server:<core>-<commit7>"
-  type        = string
-}
+locals { d = jsondecode(file("${path.module}/../deployment.json")) }
+variable "image" { type = string }
 
 provider "google" {
-  project = var.project
-  region  = var.region
+  project = local.d.project
+  region  = local.d.region
 }
-
 provider "google-beta" {
-  project = var.project
-  region  = var.region
+  project = local.d.project
+  region  = local.d.region
 }
 
-resource "google_project_service" "main" {
-  for_each = toset([
-    "run.googleapis.com",
-    "firebase.googleapis.com",
-    "firebasehosting.googleapis.com",
-    "billingbudgets.googleapis.com",
-    "logging.googleapis.com",
-    "monitoring.googleapis.com",
-  ])
-  service                    = each.value
-  disable_on_destroy         = false
-  disable_dependent_services = false
+module "mcp" {
+  source          = "git::https://github.com/companygraph/mcp-server.git//deploy/terraform?ref=v0.17.0"
+  project         = local.d.project
+  project_number  = local.d.project_number
+  billing_account = local.d.billing_account
+  region          = local.d.region
+  domain          = local.d.domain
+  site_id         = local.d.site_id
+  budget_chf      = local.d.budget_chf
+  run_host        = local.d.run_host
+  image           = var.image
+}
+
+output "service_url" { value = module.mcp.service_url }
+output "run_host" { value = module.mcp.run_host }
+output "hosting_url" { value = module.mcp.hosting_url }
+output "dns_records" { value = module.mcp.dns_records }
+
+# The resources were declared in this root until the module held them. A move renames an
+# address in the state; without it Terraform would destroy each and create it again.
+moved {
+  from = google_project_service.main
+  to   = module.mcp.google_project_service.main
+}
+moved {
+  from = google_service_account.run
+  to   = module.mcp.google_service_account.run
+}
+moved {
+  from = google_cloud_run_v2_service.mcp
+  to   = module.mcp.google_cloud_run_v2_service.mcp
+}
+moved {
+  from = google_cloud_run_v2_service_iam_member.public
+  to   = module.mcp.google_cloud_run_v2_service_iam_member.public
+}
+moved {
+  from = google_firebase_project.this
+  to   = module.mcp.google_firebase_project.this
+}
+moved {
+  from = google_firebase_hosting_site.this
+  to   = module.mcp.google_firebase_hosting_site.this
+}
+moved {
+  from = google_firebase_hosting_version.this
+  to   = module.mcp.google_firebase_hosting_version.this
+}
+moved {
+  from = google_firebase_hosting_release.this
+  to   = module.mcp.google_firebase_hosting_release.this
+}
+moved {
+  from = google_firebase_hosting_custom_domain.this
+  to   = module.mcp.google_firebase_hosting_custom_domain.this
+}
+moved {
+  from = google_billing_budget.monthly
+  to   = module.mcp.google_billing_budget.monthly
 }

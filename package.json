@@ -8,14 +8,14 @@
     "node": ">=22"
   },
   "scripts": {
-    "snapshot": "node build/snapshot.mjs",
-    "page-css": "node build/page-css.mjs",
-    "jsonld": "node build/jsonld.mjs",
-    "server-json": "node build/server-json.mjs",
+    "snapshot": "companygraph-mcp-deploy snapshot",
+    "page-css": "companygraph-mcp-deploy page-css",
+    "jsonld": "companygraph-mcp-deploy jsonld",
+    "server-json": "companygraph-mcp-deploy server-json",
     "test": "node --test 'test/*.test.mjs'"
   },
   "dependencies": {
-    "companygraph-mcp-server": "github:companygraph/mcp-server#v0.16.0"
+    "companygraph-mcp-server": "github:companygraph/mcp-server#v0.17.0"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "^2.0.0",
