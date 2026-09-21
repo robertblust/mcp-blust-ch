@@ -14,8 +14,11 @@ test("the root is Robert Blust", () => {
   assert.equal(s.root, "Robert Blust");
 });
 
-test("the company of one refuses a bare name and resolves a typed one", () => {
-  assert.throws(() => fetchEntity(s, "Robert Blust"), (e) => e instanceof ModelError && /R2/.test(e.message));
+// The identity and the profile carry one name. A name is no id, so fetch refuses it; search by
+// exact name answers it with both, and a type or an id reaches each.
+test("the company of one: a bare name finds both, fetch takes an id, and a typed name resolves", () => {
+  assert.deepEqual(search(s, "Robert Blust", { match: "name" }).results.map((r) => r.id), ["identity", "profiles/robert-blust"]);
+  assert.throws(() => fetchEntity(s, "Robert Blust"), (e) => e instanceof ModelError && e.code === "unknown_entity");
   assert.equal(getEntity(s, "identity", "Robert Blust").entity.id, "identity");
   assert.equal(getEntity(s, "profile", "Robert Blust").entity.id, "profiles/robert-blust");
 });
@@ -23,11 +26,14 @@ test("the company of one refuses a bare name and resolves a typed one", () => {
 test("evidence is verbatim and search round-trips through fetch", () => {
   // The claim and each fact under it are separate edges from the profile, told apart by via.
   const ev = findEvidence(s, "Agentic AI development").evidence.profile;
-  const claim = ev.find((x) => x.id === "profiles/robert-blust" && x.via === "Skills.Skill");
+  const claim = ev.find((x) => x.from.id === "profiles/robert-blust" && x.via === "Skills.Skill");
   assert.equal(claim.attrs.Level.name, "Expert");
   const row = ev.find((x) => x.via === "Evidence.Skill" && x.attrs["What it shows"].startsWith("Built LIKE MAGIC's internal AI marketplace on Claude"));
   assert.equal(row.attrs.Experience.name, "Co-Founder & Head of Technology");
-  const hit = search(s, "LIKE MAGIC").results.find((r) => r.id === "profiles/robert-blust/experiences/2022-likemagic");
+  // A search answers a page at a time, and the model grows: the limit is asked for, not assumed.
+  const found = search(s, "LIKE MAGIC", { limit: 200 });
+  assert.equal(found.page.hasMore, false);
+  const hit = found.results.find((r) => r.id === "profiles/robert-blust/experiences/2022-likemagic");
   assert.equal(fetchEntity(s, hit.id).title, "Co-Founder & Head of Technology");
 });
 
