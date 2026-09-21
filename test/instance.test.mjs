@@ -51,3 +51,50 @@ test("the registry entry names the name and address deployment.json holds", () =
   const d = JSON.parse(fs.readFileSync(path.join(process.cwd(), "deployment.json"), "utf8"));
   assert.deepEqual({ name: d.registry_name, url: `https://${d.domain}/mcp` }, entry);
 });
+
+// The shared page test holds the served graph to what the build wrote, which compares the
+// generator with itself. This holds what the build wrote to the model, field by field, so a
+// change to the server's jsonld() that alters the person's keys, the addresses or a pointer
+// fails here rather than reaching a crawler.
+test("a crawler is told the person and the endpoint the model names", () => {
+  const graph = JSON.parse(fs.readFileSync(path.join(process.cwd(), "dist/jsonld.json"), "utf8"))["@graph"];
+
+  const identity = s.entities.find((e) => e.id === s.rootId);
+  const surface = s.entities.find((e) => e.type === "surface" && e.name.includes("MCP server"));
+  const origin = surface.fields.url.replace(/\/$/, "");
+
+  const person = graph.find((n) => n["@type"] === "Person");
+  assert.equal(person["@id"], `${origin}/#person`, "the person is this host's copy, not a pointer elsewhere");
+  assert.equal(person.name, identity.name, "the name is the identity's");
+  assert.equal(person.url, identity.fields.url, "the url is the identity's");
+  // Minimal, as the family settled: a sibling defines its own copy and keeps it to these keys.
+  assert.deepEqual(Object.keys(person).sort(), ["@id", "@type", "name", "sameAs", "url"]);
+
+  const profile = s.entities.find((e) => e.type === "profile" && e.name === s.root);
+  const table = profile.sections.find((x) => x.heading === "Also at").tables[0];
+  const want = table.rows.map((r) => r[table.columns.indexOf("URL")])
+    .filter((u) => !u.startsWith(origin) && u.replace(/\/$/, "") !== identity.fields.url.replace(/\/$/, ""));
+  assert.deepEqual(person.sameAs, want, "every address is one the profile's Also at holds");
+
+  const api = graph.find((n) => n["@type"] === "WebAPI");
+  assert.equal(api.url, `${origin}/mcp`, "the API is the endpoint the model names");
+  assert.equal(api.description, surface.tagline, "its description is the surface's own tagline");
+  assert.equal(api.provider["@id"], person["@id"], "and it resolves to the person in this document");
+
+  // A crawler reads a graph per document, so a bare `{"@id": …}` has to resolve inside this one,
+  // and every id has to describe one thing rather than two.
+  const ids = graph.map((n) => n["@id"]);
+  assert.equal(new Set(ids).size, ids.length, `two nodes share an @id: ${ids.join(", ")}`);
+  const pointers = [];
+  const walk = (o) => {
+    if (Array.isArray(o)) return o.forEach(walk);
+    if (!o || typeof o !== "object") return;
+    const keys = Object.keys(o);
+    if (keys.length === 1 && keys[0] === "@id") pointers.push(o["@id"]);
+    else for (const [k, v] of Object.entries(o)) if (k !== "@id") walk(v);
+  };
+  walk(graph);
+  assert.ok(pointers.length, "the graph makes at least one reference");
+  const dangling = pointers.filter((id) => !ids.includes(id));
+  assert.deepEqual(dangling, [], `a pointer resolves nowhere in this document: ${dangling.join(", ")}`);
+});
