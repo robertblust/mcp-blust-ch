@@ -2,8 +2,7 @@ node_modules
 .git
 .github
 .superpowers
-build
 docs
 infra
 test
-server.json
+dist/server.json

@@ -1,0 +1,13 @@
+{
+  "project": "blust-ch-mcp",
+  "project_number": "38003987140",
+  "billing_account": "011DEB-4A45A0-3A52BB",
+  "region": "europe-west6",
+  "domain": "mcp.blust.ch",
+  "site_id": "mcp-blust-ch",
+  "repository": "robertblust/mcp-blust-ch",
+  "registry_name": "ch.blust/mental-model",
+  "registry_domain": "blust.ch",
+  "budget_chf": 10,
+  "run_host": "mcp-6nrmpez2aq-oa.a.run.app"
+}

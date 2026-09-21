@@ -9,6 +9,7 @@ snapshot.json
 page.css
 jsonld.json
 server.json
+dist/
 .terraform/
 *.tfstate
 *.tfstate.backup

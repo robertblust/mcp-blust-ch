@@ -3,12 +3,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
-COPY --chown=node:node snapshot.json ./snapshot.json
-COPY --chown=node:node page.css ./page.css
+COPY --chown=node:node dist/ ./dist/
 COPY --chown=node:node favicon.svg ./favicon.svg
 COPY --chown=node:node brand.html ./brand.html
-COPY --chown=node:node jsonld.json ./jsonld.json
 COPY --chown=node:node robots.txt ./robots.txt
 EXPOSE 8080
 USER node
-CMD ["node", "node_modules/.bin/companygraph-mcp-http", "--snapshot", "snapshot.json", "--page-css", "page.css", "--page-icon", "favicon.svg", "--page-brand", "brand.html", "--page-jsonld", "jsonld.json", "--robots", "robots.txt"]
+CMD ["node", "node_modules/.bin/companygraph-mcp-deploy", "serve"]
