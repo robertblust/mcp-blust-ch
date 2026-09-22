@@ -6,5 +6,6 @@
     "https://blust.ch"
   ],
   "month_tokens": 18500000,
-  "run_host": "chat-6nrmpez2aq-oa.a.run.app"
+  "run_host": "chat-6nrmpez2aq-oa.a.run.app",
+  "provider": "anthropic"
 }
