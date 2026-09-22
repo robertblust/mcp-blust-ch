@@ -81,10 +81,15 @@ test("a crawler is told the person and the endpoint the model names", () => {
   assert.equal(person["@id"], `${origin}/#person`, "the person is this host's copy, not a pointer elsewhere");
   assert.equal(person.name, identity.name, "the name is the identity's");
   assert.equal(person.url, identity.fields.url, "the url is the identity's");
-  // Minimal, as the family settled: a sibling defines its own copy and keeps it to these keys.
-  assert.deepEqual(Object.keys(person).sort(), ["@id", "@type", "name", "sameAs", "url"]);
-
   const profile = s.entities.find((e) => e.type === "profile" && e.name === s.root);
+  // Minimal, as the family settled: a sibling defines its own copy and keeps it to these keys,
+  // and image where the profile names a picture (core 0.38.0), the address blust.ch serves it
+  // at, so a crawler reading either site is told the same file.
+  const picture = typeof profile.fields?.image === "string" && profile.fields.image;
+  assert.deepEqual(Object.keys(person).sort(), ["@id", "@type", ...(picture ? ["image"] : []), "name", "sameAs", "url"]);
+  if (picture)
+    assert.equal(person.image, `${identity.fields.url.replace(/\/$/, "")}/images/${profile.id}.${picture.split(".").pop()}`, "the picture is the site's copy, at the entity's id");
+
   const table = profile.sections.find((x) => x.heading === "Also at").tables[0];
   const want = table.rows.map((r) => r[table.columns.indexOf("URL")])
     .filter((u) => !u.startsWith(origin) && u.replace(/\/$/, "") !== identity.fields.url.replace(/\/$/, ""));
