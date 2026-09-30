@@ -10,6 +10,14 @@ import { serverJson } from "companygraph-mcp-server/deploy";
 const s = JSON.parse(fs.readFileSync(path.join(process.cwd(), "dist/snapshot.json"), "utf8"));
 const entry = { name: "ch.blust/mental-model", url: "https://mcp.blust.ch/mcp" };
 
+// The root's id, the profile's id and the likemagic experience's id, read off the snapshot
+// rather than hardcoded, so a backfill that gives an entity an id distinct from its address
+// leaves these tests holding.
+const identityId = s.rootId;
+const profileEntity = s.entities.find((e) => e.type === "profile" && e.name === s.root);
+const likemagicEntity = s.entities.find((e) => e.type === "experience" && e.owner === profileEntity.id
+  && e.name === "Co-Founder & Head of Technology");
+
 test("the root is Robert Blust", () => {
   assert.equal(s.root, "Robert Blust");
 });
@@ -17,23 +25,23 @@ test("the root is Robert Blust", () => {
 // The identity and the profile carry one name. A name is no id, so fetch refuses it; search by
 // exact name answers it with both, and a type or an id reaches each.
 test("the company of one: a bare name finds both, fetch takes an id, and a typed name resolves", () => {
-  assert.deepEqual(search(s, "Robert Blust", { match: "name" }).results.map((r) => r.id), ["identity", "profiles/robert-blust"]);
+  assert.deepEqual(search(s, "Robert Blust", { match: "name" }).results.map((r) => r.id), [identityId, profileEntity.id]);
   assert.throws(() => fetchEntity(s, "Robert Blust"), (e) => e instanceof ModelError && e.code === "unknown_entity");
-  assert.equal(getEntity(s, "identity", "Robert Blust").entity.id, "identity");
-  assert.equal(getEntity(s, "profile", "Robert Blust").entity.id, "profiles/robert-blust");
+  assert.equal(getEntity(s, "identity", "Robert Blust").entity.id, identityId);
+  assert.equal(getEntity(s, "profile", "Robert Blust").entity.id, profileEntity.id);
 });
 
 test("evidence is verbatim and search round-trips through fetch", () => {
   // The claim and each fact under it are separate edges from the profile, told apart by via.
   const ev = findEvidence(s, "Agentic AI development").evidence.profile;
-  const claim = ev.find((x) => x.from.id === "profiles/robert-blust" && x.via === "Skills.Skill");
+  const claim = ev.find((x) => x.from.id === profileEntity.id && x.via === "Skills.Skill");
   assert.equal(claim.attrs.Level.name, "Expert");
   const row = ev.find((x) => x.via === "Evidence.Skill" && x.attrs["What it shows"].startsWith("Built LIKE MAGIC's internal AI marketplace on Claude"));
   assert.equal(row.attrs.Experience.name, "Co-Founder & Head of Technology");
   // A search answers a page at a time, and the model grows: the limit is asked for, not assumed.
   const found = search(s, "LIKE MAGIC", { limit: 200 });
   assert.equal(found.page.hasMore, false);
-  const hit = found.results.find((r) => r.id === "profiles/robert-blust/experiences/2022-likemagic");
+  const hit = found.results.find((r) => r.id === likemagicEntity.id);
   assert.equal(fetchEntity(s, hit.id).title, "Co-Founder & Head of Technology");
 });
 
@@ -88,7 +96,7 @@ test("a crawler is told the person and the endpoint the model names", () => {
   const picture = typeof profile.fields?.image === "string" && profile.fields.image;
   assert.deepEqual(Object.keys(person).sort(), ["@id", "@type", ...(picture ? ["image"] : []), "name", "sameAs", "url"]);
   if (picture)
-    assert.equal(person.image, `${identity.fields.url.replace(/\/$/, "")}/images/${profile.id}.${picture.split(".").pop()}`, "the picture is the site's copy, at the entity's id");
+    assert.equal(person.image, `${identity.fields.url.replace(/\/$/, "")}/images/${profile.address ?? profile.id}.${picture.split(".").pop()}`, "the picture is the site's copy, at the entity's address");
 
   const table = profile.sections.find((x) => x.heading === "Also at").tables[0];
   const want = table.rows.map((r) => r[table.columns.indexOf("URL")])
