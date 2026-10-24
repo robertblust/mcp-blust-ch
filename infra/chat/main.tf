@@ -43,6 +43,8 @@ module "chat" {
   anthropic_federation = try(local.c.anthropic_federation, null)
   verdict              = lookup(local.c, "verdict", false)
   verdict_threshold    = lookup(local.c, "verdict_threshold", null)
+  sign_in              = try(local.c.sign_in, null)
+  user_month_tokens    = try(local.c.user_month_tokens, null)
   image                = var.image
 }
 
